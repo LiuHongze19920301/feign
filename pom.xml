@@ -500,36 +500,36 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
-        <version>${moditect-maven-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>add-module-infos</id>
-            <phase>package</phase>
-            <goals>
-              <goal>add-module-info</goal>
-            </goals>
-            <configuration>
-              <skip>${moditect.skip}</skip>
-              <overwriteExistingFiles>true</overwriteExistingFiles>
-              <module>
-                <moduleInfo>
-                  <!-- module name will be derived from filename -->
-                  <!-- export everything -->
-                  <exports>*;</exports>
-                  <!-- declare services consumed by the artifact -->
-                  <addServiceUses>true</addServiceUses>
-                </moduleInfo>
-              </module>
-              <jdepsExtraArgs>
-                <arg>--multi-release=9</arg>
-              </jdepsExtraArgs>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.moditect</groupId>-->
+<!--        <artifactId>moditect-maven-plugin</artifactId>-->
+<!--        <version>${moditect-maven-plugin.version}</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>add-module-infos</id>-->
+<!--            <phase>package</phase>-->
+<!--            <goals>-->
+<!--              <goal>add-module-info</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <skip>${moditect.skip}</skip>-->
+<!--              <overwriteExistingFiles>true</overwriteExistingFiles>-->
+<!--              <module>-->
+<!--                <moduleInfo>-->
+<!--                  &lt;!&ndash; module name will be derived from filename &ndash;&gt;-->
+<!--                  &lt;!&ndash; export everything &ndash;&gt;-->
+<!--                  <exports>*;</exports>-->
+<!--                  &lt;!&ndash; declare services consumed by the artifact &ndash;&gt;-->
+<!--                  <addServiceUses>true</addServiceUses>-->
+<!--                </moduleInfo>-->
+<!--              </module>-->
+<!--              <jdepsExtraArgs>-->
+<!--                <arg>&#45;&#45;multi-release=9</arg>-->
+<!--              </jdepsExtraArgs>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
