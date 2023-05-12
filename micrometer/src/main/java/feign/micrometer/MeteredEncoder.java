@@ -17,7 +17,9 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import io.micrometer.core.instrument.*;
+
 import java.lang.reflect.Type;
+
 import static feign.micrometer.MetricTagResolver.EMPTY_TAGS_ARRAY;
 
 /**
@@ -25,51 +27,51 @@ import static feign.micrometer.MetricTagResolver.EMPTY_TAGS_ARRAY;
  */
 public class MeteredEncoder implements Encoder {
 
-  private final Encoder encoder;
-  private final MeterRegistry meterRegistry;
-  private final MetricName metricName;
-  private final MetricTagResolver metricTagResolver;
+    private final Encoder encoder;
+    private final MeterRegistry meterRegistry;
+    private final MetricName metricName;
+    private final MetricTagResolver metricTagResolver;
 
-  public MeteredEncoder(Encoder encoder, MeterRegistry meterRegistry) {
-    this(encoder, meterRegistry, new FeignMetricName(Encoder.class), new FeignMetricTagResolver());
-  }
-
-  public MeteredEncoder(Encoder encoder,
-      MeterRegistry meterRegistry,
-      MetricName metricName,
-      MetricTagResolver metricTagResolver) {
-    this.encoder = encoder;
-    this.meterRegistry = meterRegistry;
-    this.metricName = metricName;
-    this.metricTagResolver = metricTagResolver;
-  }
-
-  @Override
-  public void encode(Object object, Type bodyType, RequestTemplate template)
-      throws EncodeException {
-    createTimer(object, bodyType, template)
-        .record(() -> encoder.encode(object, bodyType, template));
-
-    if (template.body() != null) {
-      createSummary(object, bodyType, template).record(template.body().length);
+    public MeteredEncoder(Encoder encoder, MeterRegistry meterRegistry) {
+        this(encoder, meterRegistry, new FeignMetricName(Encoder.class), new FeignMetricTagResolver());
     }
-  }
 
-  protected Timer createTimer(Object object, Type bodyType, RequestTemplate template) {
-    final Tags allTags = metricTagResolver.tag(template.methodMetadata(), template.feignTarget(),
-        extraTags(object, bodyType, template));
-    return meterRegistry.timer(metricName.name(), allTags);
-  }
+    public MeteredEncoder(Encoder encoder,
+                          MeterRegistry meterRegistry,
+                          MetricName metricName,
+                          MetricTagResolver metricTagResolver) {
+        this.encoder = encoder;
+        this.meterRegistry = meterRegistry;
+        this.metricName = metricName;
+        this.metricTagResolver = metricTagResolver;
+    }
 
-  protected DistributionSummary createSummary(Object object,
-                                              Type bodyType,
-                                              RequestTemplate template) {
-    final Tags allTags = metricTagResolver.tag(template.methodMetadata(), template.feignTarget(),
-        extraTags(object, bodyType, template));
-    return meterRegistry.summary(metricName.name("response_size"), allTags);
-  }
+    @Override
+    public void encode(Object object, Type bodyType, RequestTemplate template)
+            throws EncodeException {
+        createTimer(object, bodyType, template)
+                .record(() -> encoder.encode(object, bodyType, template));
 
-  protected Tag[] extraTags(Object object, Type bodyType, RequestTemplate template) {
-    return EMPTY_TAGS_ARRAY;
-  }
+        if (template.body() != null) {
+            createSummary(object, bodyType, template).record(template.body().length);
+        }
+    }
+
+    protected Timer createTimer(Object object, Type bodyType, RequestTemplate template) {
+        final Tags allTags = metricTagResolver.tag(template.methodMetadata(), template.feignTarget(),
+                extraTags(object, bodyType, template));
+        return meterRegistry.timer(metricName.name(), allTags);
+    }
+
+    protected DistributionSummary createSummary(Object object,
+                                                Type bodyType,
+                                                RequestTemplate template) {
+        final Tags allTags = metricTagResolver.tag(template.methodMetadata(), template.feignTarget(),
+                extraTags(object, bodyType, template));
+        return meterRegistry.summary(metricName.name("response_size"), allTags);
+    }
+
+    protected Tag[] extraTags(Object object, Type bodyType, RequestTemplate template) {
+        return EMPTY_TAGS_ARRAY;
+    }
 }

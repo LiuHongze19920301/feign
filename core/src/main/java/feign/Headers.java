@@ -15,6 +15,7 @@ package feign;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -22,11 +23,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Expands headers supplied in the {@code value}. Variables to the the right of the colon are
  * expanded. <br>
- * 
+ *
  * <pre>
  * &#64;Headers("Content-Type: application/xml")
  * interface SoapApi {
- * ...   
+ * ...
  * &#64;RequestLine("GET /")
  * &#64;Headers("Cache-Control: max-age=640000")
  * ...
@@ -38,7 +39,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * }) void post(&#64;Param("token") String token);
  * ...
  * </pre>
- * 
+ *
  * <br>
  * <strong>Notes:</strong>
  * <ul>
@@ -52,7 +53,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * The following two forms are identical. <br>
  * <br>
  * Feign:
- * 
+ *
  * <pre>
  * &#64;RequestLine("POST /")
  * &#64;Headers({
@@ -60,10 +61,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * }) void post(&#64;Named("token") String token);
  * ...
  * </pre>
- * 
+ *
  * <br>
  * JAX-RS:
- * 
+ *
  * <pre>
  * &#64;POST &#64;Path("/")
  * void post(&#64;HeaderParam("X-Ping") String token);
@@ -74,5 +75,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Headers {
 
-  String[] value();
+    String[] value();
 }

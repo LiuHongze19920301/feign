@@ -14,6 +14,7 @@
 package feign.error;
 
 import feign.Response;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -24,14 +25,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface ErrorHandling {
-  ErrorCodes[] codeSpecific() default {};
+    ErrorCodes[] codeSpecific() default {};
 
-  Class<? extends Exception> defaultException() default NO_DEFAULT.class;
+    Class<? extends Exception> defaultException() default NO_DEFAULT.class;
 
-  final class NO_DEFAULT extends Exception {
-    @FeignExceptionConstructor
-    public NO_DEFAULT(@ResponseBody Response response) {
-      super("Endpoint responded with " + response.status() + ", reason: " + response.reason());
+    final class NO_DEFAULT extends Exception {
+        @FeignExceptionConstructor
+        public NO_DEFAULT(@ResponseBody Response response) {
+            super("Endpoint responded with " + response.status() + ", reason: " + response.reason());
+        }
     }
-  }
 }

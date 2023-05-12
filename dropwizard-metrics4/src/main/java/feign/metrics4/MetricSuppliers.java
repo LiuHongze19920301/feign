@@ -18,22 +18,23 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
 import com.codahale.metrics.Timer;
+
 import java.util.concurrent.TimeUnit;
 
 public class MetricSuppliers {
 
-  public MetricRegistry.MetricSupplier<Timer> timers() {
-    // only keep timer data for 1 minute
-    return () -> new Timer(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
-  }
+    public MetricRegistry.MetricSupplier<Timer> timers() {
+        // only keep timer data for 1 minute
+        return () -> new Timer(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
+    }
 
-  public MetricRegistry.MetricSupplier<Meter> meters() {
-    return Meter::new;
-  }
+    public MetricRegistry.MetricSupplier<Meter> meters() {
+        return Meter::new;
+    }
 
-  public MetricRegistry.MetricSupplier<Histogram> histograms() {
-    // only keep timer data for 1 minute
-    return () -> new Histogram(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
-  }
+    public MetricRegistry.MetricSupplier<Histogram> histograms() {
+        // only keep timer data for 1 minute
+        return () -> new Histogram(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
+    }
 
 }

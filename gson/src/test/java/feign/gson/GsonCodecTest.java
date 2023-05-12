@@ -21,6 +21,7 @@ import feign.Request;
 import feign.Request.HttpMethod;
 import feign.Util;
 import org.junit.Test;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,8 +29,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import feign.RequestTemplate;
 import feign.Response;
+
 import static feign.Util.UTF_8;
 import static feign.assertj.FeignAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -38,203 +41,210 @@ import static org.junit.Assert.assertNull;
 @SuppressWarnings("deprecation")
 public class GsonCodecTest {
 
-  @Test
-  public void encodesMapObjectNumericalValuesAsInteger() {
-    Map<String, Object> map = new LinkedHashMap<>();
-    map.put("foo", 1);
+    @Test
+    public void encodesMapObjectNumericalValuesAsInteger() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("foo", 1);
 
-    RequestTemplate template = new RequestTemplate();
-    new GsonEncoder().encode(map, map.getClass(), template);
+        RequestTemplate template = new RequestTemplate();
+        new GsonEncoder().encode(map, map.getClass(), template);
 
-    assertThat(template).hasBody("" //
-        + "{\n" //
-        + "  \"foo\": 1\n" //
-        + "}");
-  }
-
-  @Test
-  public void decodesMapObjectNumericalValuesAsInteger() throws Exception {
-    Map<String, Object> map = new LinkedHashMap<>();
-    map.put("foo", 1);
-
-    Response response = Response.builder()
-        .status(200)
-        .reason("OK")
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .headers(Collections.emptyMap())
-        .body("{\"foo\": 1}", UTF_8)
-        .build();
-    assertEquals(
-        new GsonDecoder().decode(response, new TypeToken<Map<String, Object>>() {}.getType()), map);
-  }
-
-  @Test
-  public void encodesFormParams() {
-
-    Map<String, Object> form = new LinkedHashMap<>();
-    form.put("foo", 1);
-    form.put("bar", Arrays.asList(2, 3));
-
-    RequestTemplate template = new RequestTemplate();
-    new GsonEncoder().encode(form, new TypeToken<Map<String, ?>>() {}.getType(), template);
-
-    assertThat(template).hasBody("" //
-        + "{\n" //
-        + "  \"foo\": 1,\n" //
-        + "  \"bar\": [\n" //
-        + "    2,\n" //
-        + "    3\n" //
-        + "  ]\n" //
-        + "}");
-  }
-
-  static class Zone extends LinkedHashMap<String, Object> {
-
-    Zone() {
-      // for reflective instantiation.
+        assertThat(template).hasBody("" //
+                + "{\n" //
+                + "  \"foo\": 1\n" //
+                + "}");
     }
 
-    Zone(String name) {
-      this(name, null);
+    @Test
+    public void decodesMapObjectNumericalValuesAsInteger() throws Exception {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("foo", 1);
+
+        Response response = Response.builder()
+                .status(200)
+                .reason("OK")
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .headers(Collections.emptyMap())
+                .body("{\"foo\": 1}", UTF_8)
+                .build();
+        assertEquals(
+                new GsonDecoder().decode(response, new TypeToken<Map<String, Object>>() {
+                }.getType()), map);
     }
 
-    Zone(String name, String id) {
-      put("name", name);
-      if (id != null) {
-        put("id", id);
-      }
+    @Test
+    public void encodesFormParams() {
+
+        Map<String, Object> form = new LinkedHashMap<>();
+        form.put("foo", 1);
+        form.put("bar", Arrays.asList(2, 3));
+
+        RequestTemplate template = new RequestTemplate();
+        new GsonEncoder().encode(form, new TypeToken<Map<String, ?>>() {
+        }.getType(), template);
+
+        assertThat(template).hasBody("" //
+                + "{\n" //
+                + "  \"foo\": 1,\n" //
+                + "  \"bar\": [\n" //
+                + "    2,\n" //
+                + "    3\n" //
+                + "  ]\n" //
+                + "}");
     }
 
-    private static final long serialVersionUID = 1L;
-  }
+    static class Zone extends LinkedHashMap<String, Object> {
 
-  @Test
-  public void decodes() throws Exception {
+        Zone() {
+            // for reflective instantiation.
+        }
 
-    List<Zone> zones = new LinkedList<Zone>();
-    zones.add(new Zone("denominator.io."));
-    zones.add(new Zone("denominator.io.", "ABCD"));
+        Zone(String name) {
+            this(name, null);
+        }
 
-    Response response = Response.builder()
-        .status(200)
-        .reason("OK")
-        .headers(Collections.emptyMap())
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(zonesJson, UTF_8)
-        .build();
-    assertEquals(zones,
-        new GsonDecoder().decode(response, new TypeToken<List<Zone>>() {}.getType()));
-  }
+        Zone(String name, String id) {
+            put("name", name);
+            if (id != null) {
+                put("id", id);
+            }
+        }
 
-  @Test
-  public void nullBodyDecodesToNull() throws Exception {
-    Response response = Response.builder()
-        .status(204)
-        .reason("OK")
-        .headers(Collections.emptyMap())
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .build();
-    assertNull(new GsonDecoder().decode(response, String.class));
-  }
-
-  @Test
-  public void emptyBodyDecodesToNull() throws Exception {
-    Response response = Response.builder()
-        .status(204)
-        .reason("OK")
-        .headers(Collections.emptyMap())
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(new byte[0])
-        .build();
-    assertNull(new GsonDecoder().decode(response, String.class));
-  }
-
-  private String zonesJson = ""//
-      + "[\n"//
-      + "  {\n"//
-      + "    \"name\": \"denominator.io.\"\n"//
-      + "  },\n"//
-      + "  {\n"//
-      + "    \"name\": \"denominator.io.\",\n"//
-      + "    \"id\": \"ABCD\"\n"//
-      + "  }\n"//
-      + "]\n";
-
-  final TypeAdapter upperZone = new TypeAdapter<Zone>() {
-
-    @Override
-    public void write(JsonWriter out, Zone value) throws IOException {
-      out.beginObject();
-      for (Map.Entry<String, Object> entry : value.entrySet()) {
-        out.name(entry.getKey()).value(entry.getValue().toString().toUpperCase());
-      }
-      out.endObject();
+        private static final long serialVersionUID = 1L;
     }
 
-    @Override
-    public Zone read(JsonReader in) throws IOException {
-      in.beginObject();
-      Zone zone = new Zone();
-      while (in.hasNext()) {
-        zone.put(in.nextName(), in.nextString().toUpperCase());
-      }
-      in.endObject();
-      return zone;
+    @Test
+    public void decodes() throws Exception {
+
+        List<Zone> zones = new LinkedList<Zone>();
+        zones.add(new Zone("denominator.io."));
+        zones.add(new Zone("denominator.io.", "ABCD"));
+
+        Response response = Response.builder()
+                .status(200)
+                .reason("OK")
+                .headers(Collections.emptyMap())
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(zonesJson, UTF_8)
+                .build();
+        assertEquals(zones,
+                new GsonDecoder().decode(response, new TypeToken<List<Zone>>() {
+                }.getType()));
     }
-  };
 
-  @Test
-  public void customDecoder() throws Exception {
-    GsonDecoder decoder = new GsonDecoder(Collections.singletonList(upperZone));
+    @Test
+    public void nullBodyDecodesToNull() throws Exception {
+        Response response = Response.builder()
+                .status(204)
+                .reason("OK")
+                .headers(Collections.emptyMap())
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .build();
+        assertNull(new GsonDecoder().decode(response, String.class));
+    }
 
-    List<Zone> zones = new LinkedList<>();
-    zones.add(new Zone("DENOMINATOR.IO."));
-    zones.add(new Zone("DENOMINATOR.IO.", "ABCD"));
+    @Test
+    public void emptyBodyDecodesToNull() throws Exception {
+        Response response = Response.builder()
+                .status(204)
+                .reason("OK")
+                .headers(Collections.emptyMap())
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(new byte[0])
+                .build();
+        assertNull(new GsonDecoder().decode(response, String.class));
+    }
 
-    Response response =
-        Response.builder()
-            .status(200)
-            .reason("OK")
-            .headers(Collections.emptyMap())
-            .request(
-                Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-            .body(zonesJson, UTF_8)
-            .build();
-    assertEquals(zones, decoder.decode(response, new TypeToken<List<Zone>>() {}.getType()));
-  }
+    private String zonesJson = ""//
+            + "[\n"//
+            + "  {\n"//
+            + "    \"name\": \"denominator.io.\"\n"//
+            + "  },\n"//
+            + "  {\n"//
+            + "    \"name\": \"denominator.io.\",\n"//
+            + "    \"id\": \"ABCD\"\n"//
+            + "  }\n"//
+            + "]\n";
 
-  @Test
-  public void customEncoder() {
-    GsonEncoder encoder = new GsonEncoder(Collections.singletonList(upperZone));
+    final TypeAdapter upperZone = new TypeAdapter<Zone>() {
 
-    List<Zone> zones = new LinkedList<>();
-    zones.add(new Zone("denominator.io."));
-    zones.add(new Zone("denominator.io.", "abcd"));
+        @Override
+        public void write(JsonWriter out, Zone value) throws IOException {
+            out.beginObject();
+            for (Map.Entry<String, Object> entry : value.entrySet()) {
+                out.name(entry.getKey()).value(entry.getValue().toString().toUpperCase());
+            }
+            out.endObject();
+        }
 
-    RequestTemplate template = new RequestTemplate();
-    encoder.encode(zones, new TypeToken<List<Zone>>() {}.getType(), template);
+        @Override
+        public Zone read(JsonReader in) throws IOException {
+            in.beginObject();
+            Zone zone = new Zone();
+            while (in.hasNext()) {
+                zone.put(in.nextName(), in.nextString().toUpperCase());
+            }
+            in.endObject();
+            return zone;
+        }
+    };
 
-    assertThat(template).hasBody("" //
-        + "[\n" //
-        + "  {\n" //
-        + "    \"name\": \"DENOMINATOR.IO.\"\n" //
-        + "  },\n" //
-        + "  {\n" //
-        + "    \"name\": \"DENOMINATOR.IO.\",\n" //
-        + "    \"id\": \"ABCD\"\n" //
-        + "  }\n" //
-        + "]");
-  }
+    @Test
+    public void customDecoder() throws Exception {
+        GsonDecoder decoder = new GsonDecoder(Collections.singletonList(upperZone));
 
-  /** Enabled via {@link feign.Feign.Builder#dismiss404()} */
-  @Test
-  public void notFoundDecodesToEmpty() throws Exception {
-    Response response = Response.builder()
-        .status(404)
-        .reason("NOT FOUND")
-        .headers(Collections.emptyMap())
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .build();
-    assertThat((byte[]) new GsonDecoder().decode(response, byte[].class)).isEmpty();
-  }
+        List<Zone> zones = new LinkedList<>();
+        zones.add(new Zone("DENOMINATOR.IO."));
+        zones.add(new Zone("DENOMINATOR.IO.", "ABCD"));
+
+        Response response =
+                Response.builder()
+                        .status(200)
+                        .reason("OK")
+                        .headers(Collections.emptyMap())
+                        .request(
+                                Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                        .body(zonesJson, UTF_8)
+                        .build();
+        assertEquals(zones, decoder.decode(response, new TypeToken<List<Zone>>() {
+        }.getType()));
+    }
+
+    @Test
+    public void customEncoder() {
+        GsonEncoder encoder = new GsonEncoder(Collections.singletonList(upperZone));
+
+        List<Zone> zones = new LinkedList<>();
+        zones.add(new Zone("denominator.io."));
+        zones.add(new Zone("denominator.io.", "abcd"));
+
+        RequestTemplate template = new RequestTemplate();
+        encoder.encode(zones, new TypeToken<List<Zone>>() {
+        }.getType(), template);
+
+        assertThat(template).hasBody("" //
+                + "[\n" //
+                + "  {\n" //
+                + "    \"name\": \"DENOMINATOR.IO.\"\n" //
+                + "  },\n" //
+                + "  {\n" //
+                + "    \"name\": \"DENOMINATOR.IO.\",\n" //
+                + "    \"id\": \"ABCD\"\n" //
+                + "  }\n" //
+                + "]");
+    }
+
+    /**
+     * Enabled via {@link feign.Feign.Builder#dismiss404()}
+     */
+    @Test
+    public void notFoundDecodesToEmpty() throws Exception {
+        Response response = Response.builder()
+                .status(404)
+                .reason("NOT FOUND")
+                .headers(Collections.emptyMap())
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .build();
+        assertThat((byte[]) new GsonDecoder().decode(response, byte[].class)).isEmpty();
+    }
 }

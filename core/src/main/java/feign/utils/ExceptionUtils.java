@@ -17,28 +17,28 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ExceptionUtils {
-  /**
-   * Introspects the {@link Throwable} to obtain the root cause.
-   *
-   * <p>
-   * This method walks through the exception chain to the last element, "root" of the tree, using
-   * {@link Throwable#getCause()}, and returns that exception.
-   *
-   * @param throwable the throwable to get the root cause for, may be null
-   * @return the root cause of the {@link Throwable}, {@code null} if null throwable input
-   */
-  public static Throwable getRootCause(Throwable throwable) {
-    if (throwable == null) {
-      return null;
+    /**
+     * Introspects the {@link Throwable} to obtain the root cause.
+     *
+     * <p>
+     * This method walks through the exception chain to the last element, "root" of the tree, using
+     * {@link Throwable#getCause()}, and returns that exception.
+     *
+     * @param throwable the throwable to get the root cause for, may be null
+     * @return the root cause of the {@link Throwable}, {@code null} if null throwable input
+     */
+    public static Throwable getRootCause(Throwable throwable) {
+        if (throwable == null) {
+            return null;
+        }
+        Throwable rootCause = throwable;
+        // this is to avoid infinite loops for recursive cases
+        final Set<Throwable> seenThrowables = new HashSet<>();
+        seenThrowables.add(rootCause);
+        while ((rootCause.getCause() != null && !seenThrowables.contains(rootCause.getCause()))) {
+            seenThrowables.add(rootCause.getCause());
+            rootCause = rootCause.getCause();
+        }
+        return rootCause;
     }
-    Throwable rootCause = throwable;
-    // this is to avoid infinite loops for recursive cases
-    final Set<Throwable> seenThrowables = new HashSet<>();
-    seenThrowables.add(rootCause);
-    while ((rootCause.getCause() != null && !seenThrowables.contains(rootCause.getCause()))) {
-      seenThrowables.add(rootCause.getCause());
-      rootCause = rootCause.getCause();
-    }
-    return rootCause;
-  }
 }

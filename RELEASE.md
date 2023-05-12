@@ -12,19 +12,20 @@ This repo uses [semantic versions](http://semver.org/). Please keep this in mind
 
    Prepare the next release by running the [release script](scripts/release.sh) from a clean checkout of the master branch.
    This script will:
-   * Update all versions to the next release.
-   * Tag the release.
-   * Update all versions to the next development version.
+    * Update all versions to the next release.
+    * Tag the release.
+    * Update all versions to the next development version.
 
 1. **Wait for CI**
 
-   This part is controlled by the [CircleCI configuration](.circleci/config.yml), specifically the `deploy` job.  Which
+   This part is controlled by the [CircleCI configuration](.circleci/config.yml), specifically the `deploy` job. Which
    creates the release artifacts and deploys them to maven central.
 
 ## Credentials
 
 Credentials of various kind are needed for the release process to work. If you notice something
-failing due to unauthorized, you will need to modify the stored values in `Sonatype` [CircleCI Context](https://circleci.com/docs/2.0/contexts/)
+failing due to unauthorized, you will need to modify the stored values
+in `Sonatype` [CircleCI Context](https://circleci.com/docs/2.0/contexts/)
 for the OpenFeign organization.
 
 `SONATYPE_USER` - the username of the Sonatype account used to upload artifacts.
@@ -39,9 +40,9 @@ variables first and correct them.
 
 ### Troubleshooting GPG issues
 
-If the `deploy` job fails when signing artifacts, the GPG key may have expired or is incorrect.  To update the
-`GPG_KEY`, you must export a valid GPG key to ascii and replace all newline characters with `\n`.  This will
-allow CircleCi to inject the key into the environment in a way where it can be imported again.  Use the following command
+If the `deploy` job fails when signing artifacts, the GPG key may have expired or is incorrect. To update the
+`GPG_KEY`, you must export a valid GPG key to ascii and replace all newline characters with `\n`. This will
+allow CircleCi to inject the key into the environment in a way where it can be imported again. Use the following command
 to generate the key file.
 
 ```shell
@@ -60,6 +61,7 @@ the following:
 
 Before you do the first release of the year, move the SNAPSHOT version back and forth from whatever the current is.
 In-between, re-apply the licenses.
+
 ```bash
 $ ./mvnw versions:set -DnewVersion=1.3.3-SNAPSHOT -DgenerateBackupPoms=false
 $ ./mvnw com.mycila:license-maven-plugin:format

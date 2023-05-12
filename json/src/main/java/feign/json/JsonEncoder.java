@@ -18,7 +18,9 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.lang.reflect.Type;
+
 import static java.lang.String.format;
 
 /**
@@ -50,16 +52,16 @@ import static java.lang.String.format;
  */
 public class JsonEncoder implements Encoder {
 
-  @Override
-  public void encode(Object object, Type bodyType, RequestTemplate template)
-      throws EncodeException {
-    if (object == null)
-      return;
-    if (object instanceof JSONArray || object instanceof JSONObject) {
-      template.body(object.toString());
-    } else {
-      throw new EncodeException(format("%s is not a type supported by this encoder.", bodyType));
+    @Override
+    public void encode(Object object, Type bodyType, RequestTemplate template)
+            throws EncodeException {
+        if (object == null)
+            return;
+        if (object instanceof JSONArray || object instanceof JSONObject) {
+            template.body(object.toString());
+        } else {
+            throw new EncodeException(format("%s is not a type supported by this encoder.", bodyType));
+        }
     }
-  }
 
 }

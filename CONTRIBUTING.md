@@ -1,26 +1,35 @@
 # Contributing to Feign
+
 Please read [HACKING](./HACKING.md) prior to raising change.
 
-If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request (on a branch other than `master` or `gh-pages`).
+If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request (on a
+branch other than `master` or `gh-pages`).
 
 ## Pull Requests
-Pull requests eventually need to resolve to a single commit. The commit log should be easy to read as a change log. We use the following form to accomplish that.
+
+Pull requests eventually need to resolve to a single commit. The commit log should be easy to read as a change log. We use the
+following form to accomplish that.
+
 * First line is a <=72 character description in present tense, explaining what this does.
-  * Ex. "Fixes regression on encoding vnd headers" > "Fixed encoding bug", which forces the reader to look at code to understand impact.
+    * Ex. "Fixes regression on encoding vnd headers" > "Fixed encoding bug", which forces the reader to look at code to understand
+      impact.
 * Do not include issue links in the first line as that makes pull requests look weird.
-  * Ex. "Addresses #345" becomes a pull request title: "Addresses #345 #346"
+    * Ex. "Addresses #345" becomes a pull request title: "Addresses #345 #346"
 * After the first line, use markdown to concisely summarize the implementation.
-  * This isn't in leiu of comments, and it assumes the reader isn't intimately familar with code structure.
+    * This isn't in leiu of comments, and it assumes the reader isn't intimately familar with code structure.
 * If the change closes an issue, note that at the end of the commit description ex. "Fixes #345"
-  * GitHub will automatically close change with this syntax.
+    * GitHub will automatically close change with this syntax.
 * If the change is notable, also update the [change log](./CHANGELOG.md) with your summary description.
-  * The unreleased minor version is often a good default.
+    * The unreleased minor version is often a good default.
 
 ## Code Style
 
-When submitting code, please use the feign code format conventions. If you use Eclipse `m2eclipse` should take care of all settings automatically.
-You can also import formatter settings using the [`eclipse-java-style.xml`](https://github.com/OpenFeign/feign/blob/master/src/config/eclipse-java-style.xml) file.
-If using IntelliJ IDEA, you can use the [Eclipse Code Formatter Plugin](http://plugins.jetbrains.com/plugin/6546) to import the same file.
+When submitting code, please use the feign code format conventions. If you use Eclipse `m2eclipse` should take care of all
+settings automatically.
+You can also import formatter settings using
+the [`eclipse-java-style.xml`](https://github.com/OpenFeign/feign/blob/master/src/config/eclipse-java-style.xml) file.
+If using IntelliJ IDEA, you can use the [Eclipse Code Formatter Plugin](http://plugins.jetbrains.com/plugin/6546) to import the
+same file.
 
 ## License
 

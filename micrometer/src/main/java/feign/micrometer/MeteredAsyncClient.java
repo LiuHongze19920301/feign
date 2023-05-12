@@ -21,56 +21,59 @@ import feign.Request.Options;
 import feign.Response;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-/** Warp feign {@link Client} with metrics. */
+/**
+ * Warp feign {@link Client} with metrics.
+ */
 public class MeteredAsyncClient extends BaseMeteredClient implements AsyncClient<Object> {
 
-  private final AsyncClient<Object> client;
+    private final AsyncClient<Object> client;
 
-  public MeteredAsyncClient(AsyncClient<Object> client, MeterRegistry meterRegistry) {
-    this(
-        client,
-        meterRegistry,
-        new FeignMetricName(AsyncClient.class),
-        new FeignMetricTagResolver());
-  }
+    public MeteredAsyncClient(AsyncClient<Object> client, MeterRegistry meterRegistry) {
+        this(
+                client,
+                meterRegistry,
+                new FeignMetricName(AsyncClient.class),
+                new FeignMetricTagResolver());
+    }
 
-  public MeteredAsyncClient(
-      AsyncClient<Object> client,
-      MeterRegistry meterRegistry,
-      MetricName metricName,
-      MetricTagResolver metricTagResolver) {
-    super(meterRegistry, metricName, metricTagResolver);
-    this.client = client;
-  }
+    public MeteredAsyncClient(
+            AsyncClient<Object> client,
+            MeterRegistry meterRegistry,
+            MetricName metricName,
+            MetricTagResolver metricTagResolver) {
+        super(meterRegistry, metricName, metricTagResolver);
+        this.client = client;
+    }
 
-  @Override
-  public CompletableFuture<Response> execute(
-                                             Request request,
-                                             Options options,
-                                             Optional<Object> requestContext) {
-    final Timer.Sample sample = Timer.start(meterRegistry);
-    return client
-        .execute(request, options, requestContext)
-        .whenComplete(
-            (response, th) -> {
-              Timer timer;
-              if (th == null) {
-                countResponseCode(request, response, options, response.status(), null);
-                timer = createTimer(request, response, options, null);
-              } else if (th instanceof FeignException) {
-                FeignException e = (FeignException) th;
-                timer = createTimer(request, response, options, e);
-                countResponseCode(request, response, options, e.status(), e);
-              } else if (th instanceof Exception) {
-                Exception e = (Exception) th;
-                timer = createTimer(request, response, options, e);
-              } else {
-                timer = createTimer(request, response, options, null);
-              }
-              sample.stop(timer);
-            });
-  }
+    @Override
+    public CompletableFuture<Response> execute(
+            Request request,
+            Options options,
+            Optional<Object> requestContext) {
+        final Timer.Sample sample = Timer.start(meterRegistry);
+        return client
+                .execute(request, options, requestContext)
+                .whenComplete(
+                        (response, th) -> {
+                            Timer timer;
+                            if (th == null) {
+                                countResponseCode(request, response, options, response.status(), null);
+                                timer = createTimer(request, response, options, null);
+                            } else if (th instanceof FeignException) {
+                                FeignException e = (FeignException) th;
+                                timer = createTimer(request, response, options, e);
+                                countResponseCode(request, response, options, e.status(), e);
+                            } else if (th instanceof Exception) {
+                                Exception e = (Exception) th;
+                                timer = createTimer(request, response, options, e);
+                            } else {
+                                timer = createTimer(request, response, options, null);
+                            }
+                            sample.stop(timer);
+                        });
+    }
 }

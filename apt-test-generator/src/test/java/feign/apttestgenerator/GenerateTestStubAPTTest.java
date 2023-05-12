@@ -15,9 +15,11 @@ package feign.apttestgenerator;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
+
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
+
 import java.io.File;
 
 /**
@@ -25,24 +27,24 @@ import java.io.File;
  */
 public class GenerateTestStubAPTTest {
 
-  private final File main = new File("../example-github/src/main/java/").getAbsoluteFile();
+    private final File main = new File("../example-github/src/main/java/").getAbsoluteFile();
 
-  @Test
-  public void test() throws Exception {
-    final Compilation compilation =
-        javac()
-            .withProcessors(new GenerateTestStubAPT())
-            .compile(JavaFileObjects.forResource(
-                new File(main, "example/github/GitHubExample.java")
-                    .toURI()
-                    .toURL()));
-    assertThat(compilation).succeeded();
-    assertThat(compilation)
-        .generatedSourceFile("example.github.GitHubStub")
-        .hasSourceEquivalentTo(JavaFileObjects.forResource(
-            new File("src/test/java/example/github/GitHubStub.java")
-                .toURI()
-                .toURL()));
-  }
+    @Test
+    public void test() throws Exception {
+        final Compilation compilation =
+                javac()
+                        .withProcessors(new GenerateTestStubAPT())
+                        .compile(JavaFileObjects.forResource(
+                                new File(main, "example/github/GitHubExample.java")
+                                        .toURI()
+                                        .toURL()));
+        assertThat(compilation).succeeded();
+        assertThat(compilation)
+                .generatedSourceFile("example.github.GitHubStub")
+                .hasSourceEquivalentTo(JavaFileObjects.forResource(
+                        new File("src/test/java/example/github/GitHubStub.java")
+                                .toURI()
+                                .toURL()));
+    }
 
 }

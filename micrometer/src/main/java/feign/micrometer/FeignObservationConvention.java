@@ -23,9 +23,9 @@ import io.micrometer.observation.ObservationConvention;
  */
 public interface FeignObservationConvention extends ObservationConvention<FeignContext> {
 
-  @Override
-  default boolean supportsContext(Observation.Context context) {
-    return context instanceof FeignContext;
-  }
+    @Override
+    default boolean supportsContext(Observation.Context context) {
+        return context instanceof FeignContext;
+    }
 
 }

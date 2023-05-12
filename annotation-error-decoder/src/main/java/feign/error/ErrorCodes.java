@@ -14,7 +14,7 @@
 package feign.error;
 
 public @interface ErrorCodes {
-  int[] codes();
+    int[] codes();
 
-  Class<? extends Exception> generate();
+    Class<? extends Exception> generate();
 }

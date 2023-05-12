@@ -16,93 +16,95 @@ package feign;
 import feign.Request.HttpMethod;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
+
 import java.util.*;
+
 import static feign.assertj.FeignAssertions.assertThat;
 
 @SuppressWarnings("deprecation")
 public class ResponseTest {
 
-  @Test
-  public void reasonPhraseIsOptional() {
-    Response response = Response.builder()
-        .status(200)
-        .headers(Collections.<String, Collection<String>>emptyMap())
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(new byte[0])
-        .build();
+    @Test
+    public void reasonPhraseIsOptional() {
+        Response response = Response.builder()
+                .status(200)
+                .headers(Collections.<String, Collection<String>>emptyMap())
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(new byte[0])
+                .build();
 
-    assertThat(response.reason()).isNull();
-    assertThat(response.toString()).startsWith("HTTP/1.1 200");
-  }
+        assertThat(response.reason()).isNull();
+        assertThat(response.toString()).startsWith("HTTP/1.1 200");
+    }
 
-  @Test
-  public void canAccessHeadersCaseInsensitively() {
-    Map<String, Collection<String>> headersMap = new LinkedHashMap<>();
-    List<String> valueList = Collections.singletonList("application/json");
-    headersMap.put("Content-Type", valueList);
-    Response response = Response.builder()
-        .status(200)
-        .headers(headersMap)
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(new byte[0])
-        .build();
-    assertThat(response.headers())
-        .hasEntrySatisfying("content-type", value -> {
-          assertThat(value).contains("application/json");
-        }).hasEntrySatisfying("Content-Type", value -> {
-          assertThat(value).contains("application/json");
+    @Test
+    public void canAccessHeadersCaseInsensitively() {
+        Map<String, Collection<String>> headersMap = new LinkedHashMap<>();
+        List<String> valueList = Collections.singletonList("application/json");
+        headersMap.put("Content-Type", valueList);
+        Response response = Response.builder()
+                .status(200)
+                .headers(headersMap)
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(new byte[0])
+                .build();
+        assertThat(response.headers())
+                .hasEntrySatisfying("content-type", value -> {
+                    assertThat(value).contains("application/json");
+                }).hasEntrySatisfying("Content-Type", value -> {
+                    assertThat(value).contains("application/json");
+                });
+    }
+
+    @Test
+    public void headerValuesWithSameNameOnlyVaryingInCaseAreMerged() {
+        Map<String, Collection<String>> headersMap = new LinkedHashMap<>();
+        headersMap.put("Set-Cookie", Arrays.asList("Cookie-A=Value", "Cookie-B=Value"));
+        headersMap.put("set-cookie", Collections.singletonList("Cookie-C=Value"));
+
+        Response response = Response.builder()
+                .status(200)
+                .headers(headersMap)
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(new byte[0])
+                .build();
+
+        assertThat(response.headers()).hasEntrySatisfying("set-cookie", value -> {
+            assertThat(value).contains("Cookie-A=Value", "Cookie-B=Value", "Cookie-C=Value");
         });
-  }
+    }
 
-  @Test
-  public void headerValuesWithSameNameOnlyVaryingInCaseAreMerged() {
-    Map<String, Collection<String>> headersMap = new LinkedHashMap<>();
-    headersMap.put("Set-Cookie", Arrays.asList("Cookie-A=Value", "Cookie-B=Value"));
-    headersMap.put("set-cookie", Collections.singletonList("Cookie-C=Value"));
+    @Test
+    public void headersAreOptional() {
+        Response response = Response.builder()
+                .status(200)
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body(new byte[0])
+                .build();
+        assertThat(response.headers()).isNotNull().isEmpty();
+    }
 
-    Response response = Response.builder()
-        .status(200)
-        .headers(headersMap)
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(new byte[0])
-        .build();
+    @Test
+    public void support1xxStatusCodes() {
+        Response response = Response.builder()
+                .status(103)
+                .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                .body((Response.Body) null)
+                .build();
 
-    assertThat(response.headers()).hasEntrySatisfying("set-cookie", value -> {
-      assertThat(value).contains("Cookie-A=Value", "Cookie-B=Value", "Cookie-C=Value");
-    });
-  }
+        assertThat(response.status()).isEqualTo(103);
+    }
 
-  @Test
-  public void headersAreOptional() {
-    Response response = Response.builder()
-        .status(200)
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body(new byte[0])
-        .build();
-    assertThat(response.headers()).isNotNull().isEmpty();
-  }
+    @Test
+    public void statusCodesOfAnyValueAreAllowed() {
+        Lists.list(600, 50, 35600).forEach(statusCode -> {
+            Response response = Response.builder()
+                    .status(statusCode)
+                    .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
+                    .body((Response.Body) null)
+                    .build();
 
-  @Test
-  public void support1xxStatusCodes() {
-    Response response = Response.builder()
-        .status(103)
-        .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-        .body((Response.Body) null)
-        .build();
-
-    assertThat(response.status()).isEqualTo(103);
-  }
-
-  @Test
-  public void statusCodesOfAnyValueAreAllowed() {
-    Lists.list(600, 50, 35600).forEach(statusCode -> {
-      Response response = Response.builder()
-          .status(statusCode)
-          .request(Request.create(HttpMethod.GET, "/api", Collections.emptyMap(), null, Util.UTF_8))
-          .body((Response.Body) null)
-          .build();
-
-      assertThat(response.status()).isEqualTo(statusCode);
-    });
-  }
+            assertThat(response.status()).isEqualTo(statusCode);
+        });
+    }
 }

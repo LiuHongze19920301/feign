@@ -20,13 +20,13 @@ package feign;
  * immutable http request sent via {@link Client#execute(Request, feign.Request.Options)}. <br>
  * <br>
  * For example: <br>
- * 
+ *
  * <pre>
  * public void apply(RequestTemplate input) {
  *   input.header(&quot;X-Auth&quot;, currentToken);
  * }
  * </pre>
- * 
+ *
  * <br>
  * <br>
  * <b>Configuration</b><br>
@@ -49,8 +49,8 @@ package feign;
  */
 public interface RequestInterceptor {
 
-  /**
-   * Called for every request. Add data using methods on the supplied {@link RequestTemplate}.
-   */
-  void apply(RequestTemplate template);
+    /**
+     * Called for every request. Add data using methods on the supplied {@link RequestTemplate}.
+     */
+    void apply(RequestTemplate template);
 }

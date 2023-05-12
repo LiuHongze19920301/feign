@@ -21,75 +21,77 @@ import feign.Response;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 
-/** Warp feign {@link Client} with metrics. */
+/**
+ * Warp feign {@link Client} with metrics.
+ */
 public class MicrometerObservationCapability implements Capability {
 
-  private final ObservationRegistry observationRegistry;
+    private final ObservationRegistry observationRegistry;
 
-  private final FeignObservationConvention customFeignObservationConvention;
+    private final FeignObservationConvention customFeignObservationConvention;
 
-  public MicrometerObservationCapability(ObservationRegistry observationRegistry,
-      FeignObservationConvention customFeignObservationConvention) {
-    this.observationRegistry = observationRegistry;
-    this.customFeignObservationConvention = customFeignObservationConvention;
-  }
-
-  public MicrometerObservationCapability(ObservationRegistry observationRegistry) {
-    this(observationRegistry, null);
-  }
-
-  @Override
-  public Client enrich(Client client) {
-    return (request, options) -> {
-      FeignContext feignContext = new FeignContext(request);
-
-      Observation observation = FeignObservationDocumentation.DEFAULT
-          .observation(this.customFeignObservationConvention,
-              DefaultFeignObservationConvention.INSTANCE, () -> feignContext,
-              this.observationRegistry)
-          .start();
-
-      try {
-        Response response = client.execute(request, options);
-        finalizeObservation(feignContext, observation, null, response);
-        return response;
-      } catch (FeignException ex) {
-        finalizeObservation(feignContext, observation, ex, null);
-        throw ex;
-      }
-    };
-  }
-
-  @Override
-  public AsyncClient<Object> enrich(AsyncClient<Object> client) {
-    return (request, options, context) -> {
-      FeignContext feignContext = new FeignContext(request);
-
-      Observation observation = FeignObservationDocumentation.DEFAULT
-          .observation(this.customFeignObservationConvention,
-              DefaultFeignObservationConvention.INSTANCE, () -> feignContext,
-              this.observationRegistry)
-          .start();
-
-      try {
-        return client.execute(feignContext.getCarrier(), options, context)
-            .whenComplete((r, ex) -> finalizeObservation(feignContext, observation, ex, r));
-      } catch (FeignException ex) {
-        finalizeObservation(feignContext, observation, ex, null);
-
-        throw ex;
-      }
-    };
-  }
-
-  private void finalizeObservation(FeignContext feignContext,
-                                   Observation observation,
-                                   Throwable ex,
-                                   Response response) {
-    feignContext.setResponse(response);
-    if (ex != null) {
-      observation.error(ex);
+    public MicrometerObservationCapability(ObservationRegistry observationRegistry,
+                                           FeignObservationConvention customFeignObservationConvention) {
+        this.observationRegistry = observationRegistry;
+        this.customFeignObservationConvention = customFeignObservationConvention;
     }
-    observation.stop();
-  }
+
+    public MicrometerObservationCapability(ObservationRegistry observationRegistry) {
+        this(observationRegistry, null);
+    }
+
+    @Override
+    public Client enrich(Client client) {
+        return (request, options) -> {
+            FeignContext feignContext = new FeignContext(request);
+
+            Observation observation = FeignObservationDocumentation.DEFAULT
+                    .observation(this.customFeignObservationConvention,
+                            DefaultFeignObservationConvention.INSTANCE, () -> feignContext,
+                            this.observationRegistry)
+                    .start();
+
+            try {
+                Response response = client.execute(request, options);
+                finalizeObservation(feignContext, observation, null, response);
+                return response;
+            } catch (FeignException ex) {
+                finalizeObservation(feignContext, observation, ex, null);
+                throw ex;
+            }
+        };
+    }
+
+    @Override
+    public AsyncClient<Object> enrich(AsyncClient<Object> client) {
+        return (request, options, context) -> {
+            FeignContext feignContext = new FeignContext(request);
+
+            Observation observation = FeignObservationDocumentation.DEFAULT
+                    .observation(this.customFeignObservationConvention,
+                            DefaultFeignObservationConvention.INSTANCE, () -> feignContext,
+                            this.observationRegistry)
+                    .start();
+
+            try {
+                return client.execute(feignContext.getCarrier(), options, context)
+                        .whenComplete((r, ex) -> finalizeObservation(feignContext, observation, ex, r));
+            } catch (FeignException ex) {
+                finalizeObservation(feignContext, observation, ex, null);
+
+                throw ex;
+            }
+        };
+    }
+
+    private void finalizeObservation(FeignContext feignContext,
+                                     Observation observation,
+                                     Throwable ex,
+                                     Response response) {
+        feignContext.setResponse(response);
+        if (ex != null) {
+            observation.error(ex);
+        }
+        observation.stop();
+    }
 }

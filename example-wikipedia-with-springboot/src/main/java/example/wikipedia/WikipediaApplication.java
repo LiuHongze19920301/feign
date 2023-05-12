@@ -17,7 +17,9 @@ import example.wikipedia.WikipediaClient.Page;
 import example.wikipedia.WikipediaClient.Response;
 import example.wikipedia.WikipediaClient.Wikipedia;
 import jakarta.annotation.PostConstruct;
+
 import java.util.Iterator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,57 +29,58 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 public class WikipediaApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(WikipediaApplication.class, args).start();;
-  }
-
-  @Autowired
-  private Wikipedia wikipedia;
-
-  @PostConstruct
-  public void run() {
-    System.out.println("Let's search for PTAL!");
-    Iterator<Page> pages = lazySearch(wikipedia, "PTAL");
-    while (pages.hasNext()) {
-      System.out.println(pages.next().title);
+    public static void main(String[] args) {
+        SpringApplication.run(WikipediaApplication.class, args).start();
+        ;
     }
-  }
 
-  /**
-   * this will lazily continue searches, making new http calls as necessary.
-   *
-   * @param wikipedia used to search
-   * @param query see {@link Wikipedia#search(String)}.
-   */
-  static Iterator<Page> lazySearch(final Wikipedia wikipedia, final String query) {
-    final Response<Page> first = wikipedia.search(query);
-    if (first.nextOffset == null) {
-      return first.iterator();
-    }
-    return new Iterator<Page>() {
-      Iterator<Page> current = first.iterator();
-      Long nextOffset = first.nextOffset;
+    @Autowired
+    private Wikipedia wikipedia;
 
-      @Override
-      public boolean hasNext() {
-        while (!current.hasNext() && nextOffset != null) {
-          System.out.println("Wow.. even more results than " + nextOffset);
-          Response<Page> nextPage = wikipedia.resumeSearch(query, nextOffset);
-          current = nextPage.iterator();
-          nextOffset = nextPage.nextOffset;
+    @PostConstruct
+    public void run() {
+        System.out.println("Let's search for PTAL!");
+        Iterator<Page> pages = lazySearch(wikipedia, "PTAL");
+        while (pages.hasNext()) {
+            System.out.println(pages.next().title);
         }
-        return current.hasNext();
-      }
+    }
 
-      @Override
-      public Page next() {
-        return current.next();
-      }
+    /**
+     * this will lazily continue searches, making new http calls as necessary.
+     *
+     * @param wikipedia used to search
+     * @param query     see {@link Wikipedia#search(String)}.
+     */
+    static Iterator<Page> lazySearch(final Wikipedia wikipedia, final String query) {
+        final Response<Page> first = wikipedia.search(query);
+        if (first.nextOffset == null) {
+            return first.iterator();
+        }
+        return new Iterator<Page>() {
+            Iterator<Page> current = first.iterator();
+            Long nextOffset = first.nextOffset;
 
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
-  }
+            @Override
+            public boolean hasNext() {
+                while (!current.hasNext() && nextOffset != null) {
+                    System.out.println("Wow.. even more results than " + nextOffset);
+                    Response<Page> nextPage = wikipedia.resumeSearch(query, nextOffset);
+                    current = nextPage.iterator();
+                    nextOffset = nextPage.nextOffset;
+                }
+                return current.hasNext();
+            }
+
+            @Override
+            public Page next() {
+                return current.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
 }

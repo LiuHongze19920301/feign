@@ -17,10 +17,13 @@ import feign.Param;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
 import feign.QueryMapEncoder;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,66 +31,66 @@ import static org.junit.Assert.*;
  */
 public class FieldQueryMapEncoderTest {
 
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
-  private final QueryMapEncoder encoder = new FieldQueryMapEncoder();
+    private final QueryMapEncoder encoder = new FieldQueryMapEncoder();
 
-  @Test
-  public void testDefaultEncoder_normalClassWithValues() {
-    final Map<String, Object> expected = new HashMap<>();
-    expected.put("foo", "fooz");
-    expected.put("bar", "barz");
-    final NormalObject normalObject = new NormalObject("fooz", "barz");
+    @Test
+    public void testDefaultEncoder_normalClassWithValues() {
+        final Map<String, Object> expected = new HashMap<>();
+        expected.put("foo", "fooz");
+        expected.put("bar", "barz");
+        final NormalObject normalObject = new NormalObject("fooz", "barz");
 
-    final Map<String, Object> encodedMap = encoder.encode(normalObject);
+        final Map<String, Object> encodedMap = encoder.encode(normalObject);
 
-    assertEquals("Unexpected encoded query map", expected, encodedMap);
-  }
-
-  @Test
-  public void testDefaultEncoder_normalClassWithOutValues() {
-    final NormalObject normalObject = new NormalObject(null, null);
-
-    final Map<String, Object> encodedMap = encoder.encode(normalObject);
-
-    assertTrue("Non-empty map generated from null getter: " + encodedMap, encodedMap.isEmpty());
-  }
-
-  @Test
-  public void testDefaultEncoder_withOverriddenParamName() {
-    HashSet<Object> expectedNames = new HashSet<>();
-    expectedNames.add("fooAlias");
-    expectedNames.add("bar");
-    final NormalObjectWithOverriddenParamName normalObject =
-        new NormalObjectWithOverriddenParamName("fooz", "barz");
-
-    final Map<String, Object> encodedMap = encoder.encode(normalObject);
-
-    assertEquals("@Param ignored", expectedNames, encodedMap.keySet());
-  }
-
-  class NormalObject {
-
-    private NormalObject(String foo, String bar) {
-      this.foo = foo;
-      this.bar = bar;
+        assertEquals("Unexpected encoded query map", expected, encodedMap);
     }
 
-    private final String foo;
-    private final String bar;
-  }
+    @Test
+    public void testDefaultEncoder_normalClassWithOutValues() {
+        final NormalObject normalObject = new NormalObject(null, null);
 
-  class NormalObjectWithOverriddenParamName {
+        final Map<String, Object> encodedMap = encoder.encode(normalObject);
 
-    private NormalObjectWithOverriddenParamName(String foo, String bar) {
-      this.foo = foo;
-      this.bar = bar;
+        assertTrue("Non-empty map generated from null getter: " + encodedMap, encodedMap.isEmpty());
     }
 
-    @Param("fooAlias")
-    private final String foo;
-    private final String bar;
-  }
+    @Test
+    public void testDefaultEncoder_withOverriddenParamName() {
+        HashSet<Object> expectedNames = new HashSet<>();
+        expectedNames.add("fooAlias");
+        expectedNames.add("bar");
+        final NormalObjectWithOverriddenParamName normalObject =
+                new NormalObjectWithOverriddenParamName("fooz", "barz");
+
+        final Map<String, Object> encodedMap = encoder.encode(normalObject);
+
+        assertEquals("@Param ignored", expectedNames, encodedMap.keySet());
+    }
+
+    class NormalObject {
+
+        private NormalObject(String foo, String bar) {
+            this.foo = foo;
+            this.bar = bar;
+        }
+
+        private final String foo;
+        private final String bar;
+    }
+
+    class NormalObjectWithOverriddenParamName {
+
+        private NormalObjectWithOverriddenParamName(String foo, String bar) {
+            this.foo = foo;
+            this.bar = bar;
+        }
+
+        @Param("fooAlias")
+        private final String foo;
+        private final String bar;
+    }
 
 }

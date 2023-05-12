@@ -21,23 +21,23 @@ import org.junit.Before;
 
 public class MicrometerObservationRegistryCapabilityTest extends MicrometerCapabilityTest {
 
-  ObservationRegistry observationRegistry = ObservationRegistry.create();
+    ObservationRegistry observationRegistry = ObservationRegistry.create();
 
-  @Before
-  public void setupRegistry() {
-    observationRegistry.observationConfig()
-        .observationHandler(new DefaultMeterObservationHandler(metricsRegistry));
-  }
+    @Before
+    public void setupRegistry() {
+        observationRegistry.observationConfig()
+                .observationHandler(new DefaultMeterObservationHandler(metricsRegistry));
+    }
 
-  @Override
-  protected Feign.Builder customizeBuilder(Feign.Builder builder) {
-    return super.customizeBuilder(builder)
-        .addCapability(new MicrometerObservationCapability(this.observationRegistry));
-  }
+    @Override
+    protected Feign.Builder customizeBuilder(Feign.Builder builder) {
+        return super.customizeBuilder(builder)
+                .addCapability(new MicrometerObservationCapability(this.observationRegistry));
+    }
 
-  @Override
-  protected <C> AsyncFeign.AsyncBuilder<C> customizeBuilder(AsyncFeign.AsyncBuilder<C> builder) {
-    return super.customizeBuilder(builder)
-        .addCapability(new MicrometerObservationCapability(this.observationRegistry));
-  }
+    @Override
+    protected <C> AsyncFeign.AsyncBuilder<C> customizeBuilder(AsyncFeign.AsyncBuilder<C> builder) {
+        return super.customizeBuilder(builder)
+                .addCapability(new MicrometerObservationCapability(this.observationRegistry));
+    }
 }

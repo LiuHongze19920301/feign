@@ -16,29 +16,30 @@ package feign.template;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 public class UriUtilsTest {
 
-  /**
-   * pct-encode a String, ensuring that all reserved characters are encoded.
-   */
-  @Test
-  public void pctEncode() {
-    String queryParameterValue = "firstName=James;lastName=Bond;location=England&Britain?";
-    assertThat(UriUtils.encode(queryParameterValue, UTF_8))
-        .isEqualToIgnoringCase(
-            "firstName%3DJames%3BlastName%3DBond%3Blocation%3DEngland%26Britain%3F");
-  }
+    /**
+     * pct-encode a String, ensuring that all reserved characters are encoded.
+     */
+    @Test
+    public void pctEncode() {
+        String queryParameterValue = "firstName=James;lastName=Bond;location=England&Britain?";
+        assertThat(UriUtils.encode(queryParameterValue, UTF_8))
+                .isEqualToIgnoringCase(
+                        "firstName%3DJames%3BlastName%3DBond%3Blocation%3DEngland%26Britain%3F");
+    }
 
 
-  /**
-   * pct-encode preserving reserved characters.
-   */
-  @Test
-  public void pctEncodeWithReservedCharacters() {
-    String withReserved = "/api/user@host:port#section[a-z]/data";
-    String encoded = UriUtils.encode(withReserved, UTF_8, true);
-    assertThat(encoded).isEqualTo("/api/user@host:port#section[a-z]/data");
-  }
+    /**
+     * pct-encode preserving reserved characters.
+     */
+    @Test
+    public void pctEncodeWithReservedCharacters() {
+        String withReserved = "/api/user@host:port#section[a-z]/data";
+        String encoded = UriUtils.encode(withReserved, UTF_8, true);
+        assertThat(encoded).isEqualTo("/api/user@host:port#section[a-z]/data");
+    }
 }

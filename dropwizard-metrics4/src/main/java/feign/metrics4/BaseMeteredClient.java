@@ -22,83 +22,83 @@ import feign.utils.ExceptionUtils;
 
 class BaseMeteredClient {
 
-  protected final MetricRegistry metricRegistry;
-  protected final FeignMetricName metricName;
-  protected final MetricSuppliers metricSuppliers;
+    protected final MetricRegistry metricRegistry;
+    protected final FeignMetricName metricName;
+    protected final MetricSuppliers metricSuppliers;
 
-  public BaseMeteredClient(
-      MetricRegistry metricRegistry, FeignMetricName metricName, MetricSuppliers metricSuppliers) {
-    this.metricRegistry = metricRegistry;
-    this.metricName = metricName;
-    this.metricSuppliers = metricSuppliers;
-  }
+    public BaseMeteredClient(
+            MetricRegistry metricRegistry, FeignMetricName metricName, MetricSuppliers metricSuppliers) {
+        this.metricRegistry = metricRegistry;
+        this.metricName = metricName;
+        this.metricSuppliers = metricSuppliers;
+    }
 
-  protected Timer.Context createTimer(RequestTemplate template) {
-    return metricRegistry
-        .timer(
-            MetricRegistry.name(
-                metricName.metricName(template.methodMetadata(), template.feignTarget()),
-                "uri",
-                template.methodMetadata().template().path()),
-            metricSuppliers.timers())
-        .time();
-  }
+    protected Timer.Context createTimer(RequestTemplate template) {
+        return metricRegistry
+                .timer(
+                        MetricRegistry.name(
+                                metricName.metricName(template.methodMetadata(), template.feignTarget()),
+                                "uri",
+                                template.methodMetadata().template().path()),
+                        metricSuppliers.timers())
+                .time();
+    }
 
-  protected void recordSuccess(RequestTemplate template, Response response) {
-    metricRegistry
-        .meter(
-            MetricRegistry.name(
-                httpResponseCode(template),
-                "status_group",
-                response.status() / 100 + "xx",
-                "http_status",
-                String.valueOf(response.status()),
-                "http_method",
-                template.methodMetadata().template().method(),
-                "uri",
-                template.methodMetadata().template().path()),
-            metricSuppliers.meters())
-        .mark();
-  }
+    protected void recordSuccess(RequestTemplate template, Response response) {
+        metricRegistry
+                .meter(
+                        MetricRegistry.name(
+                                httpResponseCode(template),
+                                "status_group",
+                                response.status() / 100 + "xx",
+                                "http_status",
+                                String.valueOf(response.status()),
+                                "http_method",
+                                template.methodMetadata().template().method(),
+                                "uri",
+                                template.methodMetadata().template().path()),
+                        metricSuppliers.meters())
+                .mark();
+    }
 
-  protected void recordFailure(RequestTemplate template, FeignException e) {
-    metricRegistry
-        .meter(
-            MetricRegistry.name(
-                httpResponseCode(template),
-                "exception_name",
-                e.getClass().getSimpleName(),
-                "root_cause_name",
-                ExceptionUtils.getRootCause(e).getClass().getSimpleName(),
-                "status_group",
-                e.status() / 100 + "xx",
-                "http_status",
-                String.valueOf(e.status()),
-                "http_method",
-                template.methodMetadata().template().method(),
-                "uri",
-                template.methodMetadata().template().path()),
-            metricSuppliers.meters())
-        .mark();
-  }
+    protected void recordFailure(RequestTemplate template, FeignException e) {
+        metricRegistry
+                .meter(
+                        MetricRegistry.name(
+                                httpResponseCode(template),
+                                "exception_name",
+                                e.getClass().getSimpleName(),
+                                "root_cause_name",
+                                ExceptionUtils.getRootCause(e).getClass().getSimpleName(),
+                                "status_group",
+                                e.status() / 100 + "xx",
+                                "http_status",
+                                String.valueOf(e.status()),
+                                "http_method",
+                                template.methodMetadata().template().method(),
+                                "uri",
+                                template.methodMetadata().template().path()),
+                        metricSuppliers.meters())
+                .mark();
+    }
 
-  protected void recordFailure(RequestTemplate template, Exception e) {
-    metricRegistry
-        .meter(
-            MetricRegistry.name(
-                httpResponseCode(template),
-                "exception_name",
-                e.getClass().getSimpleName(),
-                "root_cause_name",
-                ExceptionUtils.getRootCause(e).getClass().getSimpleName(),
-                "uri",
-                template.methodMetadata().template().path()),
-            metricSuppliers.meters())
-        .mark();
-  }
+    protected void recordFailure(RequestTemplate template, Exception e) {
+        metricRegistry
+                .meter(
+                        MetricRegistry.name(
+                                httpResponseCode(template),
+                                "exception_name",
+                                e.getClass().getSimpleName(),
+                                "root_cause_name",
+                                ExceptionUtils.getRootCause(e).getClass().getSimpleName(),
+                                "uri",
+                                template.methodMetadata().template().path()),
+                        metricSuppliers.meters())
+                .mark();
+    }
 
-  private String httpResponseCode(RequestTemplate template) {
-    return metricName.metricName(
-        template.methodMetadata(), template.feignTarget(), "http_response_code");
-  }
+    private String httpResponseCode(RequestTemplate template) {
+        return metricName.metricName(
+                template.methodMetadata(), template.feignTarget(), "http_response_code");
+    }
 }

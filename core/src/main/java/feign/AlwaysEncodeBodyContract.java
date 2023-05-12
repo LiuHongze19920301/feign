@@ -17,7 +17,7 @@ package feign;
  * {@link DeclarativeContract} extension that allows user provided custom encoders to define the
  * request message payload using only the request template and the method parameters, not requiring
  * a specific and unique body object.
- *
+ * <p>
  * This type of contract is useful when an application needs a Feign client whose request payload is
  * defined entirely by a custom Feign encoder regardless of how many parameters are declared at the
  * client method. In this case, even with no presence of body parameter the provided encoder will

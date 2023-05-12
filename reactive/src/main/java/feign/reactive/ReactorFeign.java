@@ -16,53 +16,55 @@ package feign.reactive;
 import feign.Feign;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Map;
+
 import feign.InvocationHandlerFactory;
 import feign.Target;
 
 public class ReactorFeign extends ReactiveFeign {
 
-  public static Builder builder() {
-    return new Builder(Schedulers.boundedElastic());
-  }
-
-  public static Builder builder(Scheduler scheduler) {
-    return new Builder(scheduler);
-  }
-
-  public static class Builder extends ReactiveFeign.Builder {
-
-    private final Scheduler scheduler;
-
-    Builder(Scheduler scheduler) {
-      this.scheduler = scheduler;
+    public static Builder builder() {
+        return new Builder(Schedulers.boundedElastic());
     }
 
-    @Override
-    public Feign build() {
-      super.invocationHandlerFactory(new ReactorInvocationHandlerFactory(scheduler));
-      return super.build();
+    public static Builder builder(Scheduler scheduler) {
+        return new Builder(scheduler);
     }
 
-    @Override
-    public Builder invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
-      throw new UnsupportedOperationException(
-          "Invocation Handler Factory overrides are not supported.");
-    }
-  }
+    public static class Builder extends ReactiveFeign.Builder {
 
-  private static class ReactorInvocationHandlerFactory implements InvocationHandlerFactory {
-    private final Scheduler scheduler;
+        private final Scheduler scheduler;
 
-    private ReactorInvocationHandlerFactory(Scheduler scheduler) {
-      this.scheduler = scheduler;
+        Builder(Scheduler scheduler) {
+            this.scheduler = scheduler;
+        }
+
+        @Override
+        public Feign build() {
+            super.invocationHandlerFactory(new ReactorInvocationHandlerFactory(scheduler));
+            return super.build();
+        }
+
+        @Override
+        public Builder invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
+            throw new UnsupportedOperationException(
+                    "Invocation Handler Factory overrides are not supported.");
+        }
     }
 
-    @Override
-    public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
-      return new ReactorInvocationHandler(target, dispatch, scheduler);
+    private static class ReactorInvocationHandlerFactory implements InvocationHandlerFactory {
+        private final Scheduler scheduler;
+
+        private ReactorInvocationHandlerFactory(Scheduler scheduler) {
+            this.scheduler = scheduler;
+        }
+
+        @Override
+        public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+            return new ReactorInvocationHandler(target, dispatch, scheduler);
+        }
     }
-  }
 }

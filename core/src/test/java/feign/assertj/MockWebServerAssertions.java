@@ -18,7 +18,7 @@ import org.assertj.core.api.Assertions;
 
 public class MockWebServerAssertions extends Assertions {
 
-  public static RecordedRequestAssert assertThat(RecordedRequest actual) {
-    return new RecordedRequestAssert(actual);
-  }
+    public static RecordedRequestAssert assertThat(RecordedRequest actual) {
+        return new RecordedRequestAssert(actual);
+    }
 }

@@ -22,101 +22,102 @@ import java.util.Map;
 
 public class RequestHeaders {
 
-  public static class Builder {
+    public static class Builder {
 
-    private Map<String, Collection<String>> headers =
-        new LinkedHashMap<String, Collection<String>>();
+        private Map<String, Collection<String>> headers =
+                new LinkedHashMap<String, Collection<String>>();
 
-    private Builder() {}
+        private Builder() {
+        }
 
-    public Builder add(String key, Collection<String> values) {
-      if (!headers.containsKey(key)) {
-        headers.put(key, values);
-      } else {
-        Collection<String> previousValues = headers.get(key);
-        previousValues.addAll(values);
-        headers.put(key, previousValues);
-      }
-      return this;
+        public Builder add(String key, Collection<String> values) {
+            if (!headers.containsKey(key)) {
+                headers.put(key, values);
+            } else {
+                Collection<String> previousValues = headers.get(key);
+                previousValues.addAll(values);
+                headers.put(key, previousValues);
+            }
+            return this;
+        }
+
+        public Builder add(String key, String value) {
+            if (!headers.containsKey(key)) {
+                headers.put(key, new ArrayList<String>(Arrays.asList(value)));
+            } else {
+                final Collection<String> values = headers.get(key);
+                values.add(value);
+                headers.put(key, values);
+            }
+            return this;
+        }
+
+        public RequestHeaders build() {
+            return new RequestHeaders(this);
+        }
+
     }
 
-    public Builder add(String key, String value) {
-      if (!headers.containsKey(key)) {
-        headers.put(key, new ArrayList<String>(Arrays.asList(value)));
-      } else {
-        final Collection<String> values = headers.get(key);
-        values.add(value);
-        headers.put(key, values);
-      }
-      return this;
+    public static final Map<String, Collection<String>> EMPTY = Collections.emptyMap();
+
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public RequestHeaders build() {
-      return new RequestHeaders(this);
+    public static RequestHeaders of(Map<String, Collection<String>> headers) {
+        return new RequestHeaders(headers);
     }
 
-  }
+    private Map<String, Collection<String>> headers;
 
-  public static final Map<String, Collection<String>> EMPTY = Collections.emptyMap();
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static RequestHeaders of(Map<String, Collection<String>> headers) {
-    return new RequestHeaders(headers);
-  }
-
-  private Map<String, Collection<String>> headers;
-
-  private RequestHeaders(Builder builder) {
-    this.headers = builder.headers;
-  }
-
-  private RequestHeaders(Map<String, Collection<String>> headers) {
-    this.headers = headers;
-  }
-
-  public int size() {
-    return headers.size();
-  }
-
-  public int sizeOf(String key) {
-    if (!headers.containsKey(key)) {
-      return 0;
+    private RequestHeaders(Builder builder) {
+        this.headers = builder.headers;
     }
-    return headers.get(key).size();
-  }
 
-  public Collection<String> fetch(String key) {
-    return headers.get(key);
-  }
+    private RequestHeaders(Map<String, Collection<String>> headers) {
+        this.headers = headers;
+    }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public int size() {
+        return headers.size();
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final RequestHeaders other = (RequestHeaders) obj;
-    return this.headers.equals(other.headers);
-  }
 
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    for (Map.Entry<String, Collection<String>> entry : headers.entrySet()) {
-      builder.append(entry).append(',').append(' ');
+    public int sizeOf(String key) {
+        if (!headers.containsKey(key)) {
+            return 0;
+        }
+        return headers.get(key).size();
     }
-    if (builder.length() > 0) {
-      return builder.substring(0, builder.length() - 2);
+
+    public Collection<String> fetch(String key) {
+        return headers.get(key);
     }
-    return "no";
-  }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RequestHeaders other = (RequestHeaders) obj;
+        return this.headers.equals(other.headers);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Collection<String>> entry : headers.entrySet()) {
+            builder.append(entry).append(',').append(' ');
+        }
+        if (builder.length() > 0) {
+            return builder.substring(0, builder.length() - 2);
+        }
+        return "no";
+    }
 
 }

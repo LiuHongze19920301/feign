@@ -14,8 +14,10 @@
 package feign.hystrix;
 
 import com.netflix.hystrix.HystrixCommand;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import feign.Capability;
 import feign.Contract;
 import feign.InvocationHandlerFactory;
@@ -27,34 +29,34 @@ import feign.InvocationHandlerFactory;
  */
 public final class HystrixCapability implements Capability {
 
-  private SetterFactory setterFactory = new SetterFactory.Default();
-  private final Map<Class, Object> fallbacks = new HashMap<>();
+    private SetterFactory setterFactory = new SetterFactory.Default();
+    private final Map<Class, Object> fallbacks = new HashMap<>();
 
-  /**
-   * Allows you to override hystrix properties such as thread pools and command keys.
-   */
-  public HystrixCapability setterFactory(SetterFactory setterFactory) {
-    this.setterFactory = setterFactory;
-    return this;
-  }
+    /**
+     * Allows you to override hystrix properties such as thread pools and command keys.
+     */
+    public HystrixCapability setterFactory(SetterFactory setterFactory) {
+        this.setterFactory = setterFactory;
+        return this;
+    }
 
-  @Override
-  public Contract enrich(Contract contract) {
-    return new HystrixDelegatingContract(contract);
-  }
+    @Override
+    public Contract enrich(Contract contract) {
+        return new HystrixDelegatingContract(contract);
+    }
 
-  @Override
-  public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
-    return (target, dispatch) -> new HystrixInvocationHandler(target, dispatch, setterFactory,
-        fallbacks.containsKey(target.type())
-            ? new FallbackFactory.Default<>(fallbacks.get(target.type()))
-            : null);
-  }
+    @Override
+    public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
+        return (target, dispatch) -> new HystrixInvocationHandler(target, dispatch, setterFactory,
+                fallbacks.containsKey(target.type())
+                        ? new FallbackFactory.Default<>(fallbacks.get(target.type()))
+                        : null);
+    }
 
-  public <E> Capability fallback(Class<E> api, E fallback) {
-    fallbacks.put(api, fallback);
+    public <E> Capability fallback(Class<E> api, E fallback) {
+        fallbacks.put(api, fallback);
 
-    return this;
-  }
+        return this;
+    }
 
 }

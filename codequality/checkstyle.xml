@@ -15,8 +15,8 @@
 
 -->
 <!DOCTYPE module PUBLIC
-    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
-    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+        "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
 
@@ -47,11 +47,11 @@
     <!-- Miscellaneous other checks.                   -->
     <!-- See http://checkstyle.sf.net/config_misc.html -->
     <module name="RegexpSingleline">
-       <property name="format" value="\s+$"/>
-       <property name="minimum" value="0"/>
-       <property name="maximum" value="0"/>
-       <property name="message" value="Line has trailing spaces."/>
-       <property name="severity" value="info"/>
+        <property name="format" value="\s+$"/>
+        <property name="minimum" value="0"/>
+        <property name="maximum" value="0"/>
+        <property name="message" value="Line has trailing spaces."/>
+        <property name="severity" value="info"/>
     </module>
 
     <module name="TreeWalker">
@@ -59,22 +59,22 @@
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
         <module name="JavadocMethod">
-          <property name="scope" value="package"/>
-          <property name="allowMissingParamTags" value="true"/>
-          <property name="allowMissingThrowsTags" value="true"/>
-          <property name="allowMissingReturnTag" value="true"/>
-          <property name="allowThrowsTagsForSubclasses" value="true"/>
-          <property name="allowUndeclaredRTE" value="true"/>
-          <property name="allowMissingPropertyJavadoc" value="true"/>
+            <property name="scope" value="package"/>
+            <property name="allowMissingParamTags" value="true"/>
+            <property name="allowMissingThrowsTags" value="true"/>
+            <property name="allowMissingReturnTag" value="true"/>
+            <property name="allowThrowsTagsForSubclasses" value="true"/>
+            <property name="allowUndeclaredRTE" value="true"/>
+            <property name="allowMissingPropertyJavadoc" value="true"/>
         </module>
         <module name="JavadocType">
-          <property name="scope" value="package"/>
+            <property name="scope" value="package"/>
         </module>
         <module name="JavadocVariable">
-          <property name="scope" value="package"/>
+            <property name="scope" value="package"/>
         </module>
         <module name="JavadocStyle">
-          <property name="checkEmptyJavadoc" value="true"/>
+            <property name="checkEmptyJavadoc" value="true"/>
         </module>
 
         <!-- Checks for Naming Conventions.                  -->
@@ -100,11 +100,11 @@
         <!-- Checks for Size Violations.                    -->
         <!-- See http://checkstyle.sf.net/config_sizes.html -->
         <module name="LineLength">
-          <!-- what is a good max value? -->
-          <property name="max" value="120"/>
-          <!-- ignore lines like "$File: //depot/... $" -->
-          <property name="ignorePattern" value="\$File.*\$"/>
-          <property name="severity" value="info"/>
+            <!-- what is a good max value? -->
+            <property name="max" value="120"/>
+            <!-- ignore lines like "$File: //depot/... $" -->
+            <property name="ignorePattern" value="\$File.*\$"/>
+            <property name="severity" value="info"/>
         </module>
         <module name="MethodLength"/>
         <module name="ParameterNumber"/>
@@ -133,7 +133,7 @@
         <!-- See http://checkstyle.sf.net/config_blocks.html -->
         <module name="AvoidNestedBlocks"/>
         <module name="EmptyBlock">
-          <property name="option" value="text"/>
+            <property name="option" value="text"/>
         </module>
         <module name="LeftCurly"/>
         <module name="NeedBraces"/>
@@ -146,21 +146,21 @@
         <module name="EmptyStatement"/>
         <module name="EqualsHashCode"/>
         <module name="HiddenField">
-          <property name="ignoreConstructorParameter" value="true"/>
-          <property name="ignoreSetter" value="true"/>
-          <property name="severity" value="warning"/>
+            <property name="ignoreConstructorParameter" value="true"/>
+            <property name="ignoreSetter" value="true"/>
+            <property name="severity" value="warning"/>
         </module>
         <module name="IllegalInstantiation"/>
         <module name="InnerAssignment"/>
         <module name="MagicNumber">
-          <property name="severity" value="warning"/>
+            <property name="severity" value="warning"/>
         </module>
         <module name="MissingSwitchDefault"/>
         <!-- Problem with finding exception types... -->
         <module name="RedundantThrows">
-          <property name="allowUnchecked" value="true"/>
-          <property name="suppressLoadErrors" value="true"/>
-          <property name="severity" value="info"/>
+            <property name="allowUnchecked" value="true"/>
+            <property name="suppressLoadErrors" value="true"/>
+            <property name="severity" value="info"/>
         </module>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
@@ -179,8 +179,8 @@
         <module name="ArrayTypeStyle"/>
         <!-- <module name="FinalParameters"/> -->
         <module name="TodoComment">
-          <property name="format" value="TODO"/>
-          <property name="severity" value="info"/>
+            <property name="format" value="TODO"/>
+            <property name="severity" value="info"/>
         </module>
         <module name="UpperEll"/>
 
@@ -190,14 +190,14 @@
 
     <!-- Enable suppression comments -->
     <module name="SuppressionCommentFilter">
-      <property name="offCommentFormat" value="CHECKSTYLE IGNORE\s+(\S+)"/>
-      <property name="onCommentFormat" value="CHECKSTYLE END IGNORE\s+(\S+)"/>
-      <property name="checkFormat" value="$1"/>
+        <property name="offCommentFormat" value="CHECKSTYLE IGNORE\s+(\S+)"/>
+        <property name="onCommentFormat" value="CHECKSTYLE END IGNORE\s+(\S+)"/>
+        <property name="checkFormat" value="$1"/>
     </module>
     <module name="SuppressWithNearbyCommentFilter">
-      <!-- Syntax is "SUPPRESS CHECKSTYLE name" -->
-      <property name="commentFormat" value="SUPPRESS CHECKSTYLE (\w+)"/>
-      <property name="checkFormat" value="$1"/>
-      <property name="influenceFormat" value="1"/>
+        <!-- Syntax is "SUPPRESS CHECKSTYLE name" -->
+        <property name="commentFormat" value="SUPPRESS CHECKSTYLE (\w+)"/>
+        <property name="checkFormat" value="$1"/>
+        <property name="influenceFormat" value="1"/>
     </module>
 </module>

@@ -16,43 +16,45 @@ package feign;
 import feign.Request.HttpMethod;
 import feign.Target.EmptyTarget;
 import org.junit.Test;
+
 import java.net.URI;
+
 import static feign.assertj.FeignAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 public class EmptyTargetTest {
 
-  @Test
-  public void whenNameNotSupplied() {
-    assertThat(EmptyTarget.create(UriInterface.class))
-        .isEqualTo(EmptyTarget.create(UriInterface.class, "empty:UriInterface"));
-  }
+    @Test
+    public void whenNameNotSupplied() {
+        assertThat(EmptyTarget.create(UriInterface.class))
+                .isEqualTo(EmptyTarget.create(UriInterface.class, "empty:UriInterface"));
+    }
 
-  @Test
-  public void toString_withoutName() {
-    assertThat(EmptyTarget.create(UriInterface.class).toString())
-        .isEqualTo("EmptyTarget(type=UriInterface)");
-  }
+    @Test
+    public void toString_withoutName() {
+        assertThat(EmptyTarget.create(UriInterface.class).toString())
+                .isEqualTo("EmptyTarget(type=UriInterface)");
+    }
 
-  @Test
-  public void toString_withName() {
-    assertThat(EmptyTarget.create(UriInterface.class, "manager-access").toString())
-        .isEqualTo("EmptyTarget(type=UriInterface, name=manager-access)");
-  }
+    @Test
+    public void toString_withName() {
+        assertThat(EmptyTarget.create(UriInterface.class, "manager-access").toString())
+                .isEqualTo("EmptyTarget(type=UriInterface, name=manager-access)");
+    }
 
-  @Test
-  public void mustApplyToAbsoluteUrl() {
-    UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-        () -> EmptyTarget.create(UriInterface.class)
-            .apply(new RequestTemplate().method(HttpMethod.GET).uri("/relative")));
-    assertEquals("Request with non-absolute URL not supported with empty target",
-        exception.getMessage());
-  }
+    @Test
+    public void mustApplyToAbsoluteUrl() {
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
+                () -> EmptyTarget.create(UriInterface.class)
+                        .apply(new RequestTemplate().method(HttpMethod.GET).uri("/relative")));
+        assertEquals("Request with non-absolute URL not supported with empty target",
+                exception.getMessage());
+    }
 
-  interface UriInterface {
+    interface UriInterface {
 
-    @RequestLine("GET /")
-    Response get(URI endpoint);
-  }
+        @RequestLine("GET /")
+        Response get(URI endpoint);
+    }
 }

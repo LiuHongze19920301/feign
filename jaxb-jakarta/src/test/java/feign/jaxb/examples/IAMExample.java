@@ -21,70 +21,70 @@ import jakarta.xml.bind.annotation.*;
 
 public class IAMExample {
 
-  public static void main(String... args) {
-    IAM iam = Feign.builder()
-        .decoder(new JAXBDecoder(new JAXBContextFactory.Builder().build()))
-        .target(new IAMTarget(args[0], args[1]));
+    public static void main(String... args) {
+        IAM iam = Feign.builder()
+                .decoder(new JAXBDecoder(new JAXBContextFactory.Builder().build()))
+                .target(new IAMTarget(args[0], args[1]));
 
-    GetUserResponse response = iam.userResponse();
-    System.out.println("UserId: " + response.result.user.id);
-  }
-
-  interface IAM {
-
-    @RequestLine("GET /?Action=GetUser&Version=2010-05-08")
-    GetUserResponse userResponse();
-  }
-
-  static class IAMTarget extends AWSSignatureVersion4 implements Target<IAM> {
-
-    private IAMTarget(String accessKey, String secretKey) {
-      super(accessKey, secretKey);
+        GetUserResponse response = iam.userResponse();
+        System.out.println("UserId: " + response.result.user.id);
     }
 
-    @Override
-    public Class<IAM> type() {
-      return IAM.class;
+    interface IAM {
+
+        @RequestLine("GET /?Action=GetUser&Version=2010-05-08")
+        GetUserResponse userResponse();
     }
 
-    @Override
-    public String name() {
-      return "iam";
+    static class IAMTarget extends AWSSignatureVersion4 implements Target<IAM> {
+
+        private IAMTarget(String accessKey, String secretKey) {
+            super(accessKey, secretKey);
+        }
+
+        @Override
+        public Class<IAM> type() {
+            return IAM.class;
+        }
+
+        @Override
+        public String name() {
+            return "iam";
+        }
+
+        @Override
+        public String url() {
+            return "https://iam.amazonaws.com";
+        }
+
+        @Override
+        public Request apply(RequestTemplate in) {
+            in.target(url());
+            return super.apply(in);
+        }
     }
 
-    @Override
-    public String url() {
-      return "https://iam.amazonaws.com";
+    @XmlRootElement(name = "GetUserResponse", namespace = "https://iam.amazonaws.com/doc/2010-05-08/")
+    @XmlAccessorType(XmlAccessType.FIELD)
+    static class GetUserResponse {
+
+        @XmlElement(name = "GetUserResult")
+        private GetUserResult result;
     }
 
-    @Override
-    public Request apply(RequestTemplate in) {
-      in.target(url());
-      return super.apply(in);
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "GetUserResult")
+    static class GetUserResult {
+
+        @XmlElement(name = "User")
+        private User user;
     }
-  }
 
-  @XmlRootElement(name = "GetUserResponse", namespace = "https://iam.amazonaws.com/doc/2010-05-08/")
-  @XmlAccessorType(XmlAccessType.FIELD)
-  static class GetUserResponse {
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "User")
+    static class User {
 
-    @XmlElement(name = "GetUserResult")
-    private GetUserResult result;
-  }
-
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "GetUserResult")
-  static class GetUserResult {
-
-    @XmlElement(name = "User")
-    private User user;
-  }
-
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "User")
-  static class User {
-
-    @XmlElement(name = "UserId")
-    private String id;
-  }
+        @XmlElement(name = "UserId")
+        private String id;
+    }
 }

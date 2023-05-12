@@ -20,27 +20,27 @@ import java.util.Objects;
  */
 final class JAXBContextPackageCacheKey implements JAXBContextCacheKey {
 
-  private final String packageName;
+    private final String packageName;
 
-  private final ClassLoader classLoader;
+    private final ClassLoader classLoader;
 
-  JAXBContextPackageCacheKey(String packageName, ClassLoader classLoader) {
-    this.packageName = packageName;
-    this.classLoader = classLoader;
-  }
+    JAXBContextPackageCacheKey(String packageName, ClassLoader classLoader) {
+        this.packageName = packageName;
+        this.classLoader = classLoader;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    JAXBContextPackageCacheKey that = (JAXBContextPackageCacheKey) o;
-    return packageName.equals(that.packageName) && classLoader.equals(that.classLoader);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        JAXBContextPackageCacheKey that = (JAXBContextPackageCacheKey) o;
+        return packageName.equals(that.packageName) && classLoader.equals(that.classLoader);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(packageName, classLoader);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(packageName, classLoader);
+    }
 }

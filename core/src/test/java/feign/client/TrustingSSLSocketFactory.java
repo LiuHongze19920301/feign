@@ -32,143 +32,145 @@ import javax.net.ssl.*;
  * Used for ssl tests to simplify setup.
  */
 public final class TrustingSSLSocketFactory extends SSLSocketFactory
-    implements X509TrustManager, X509KeyManager {
+        implements X509TrustManager, X509KeyManager {
 
-  private static final Map<String, SSLSocketFactory> sslSocketFactories =
-      new LinkedHashMap<String, SSLSocketFactory>();
-  private static final char[] KEYSTORE_PASSWORD = "password".toCharArray();
-  private final static String[] ENABLED_CIPHER_SUITES = {"TLS_RSA_WITH_AES_256_CBC_SHA"};
-  private final SSLSocketFactory delegate;
-  private final String serverAlias;
-  private final PrivateKey privateKey;
-  private final X509Certificate[] certificateChain;
+    private static final Map<String, SSLSocketFactory> sslSocketFactories =
+            new LinkedHashMap<String, SSLSocketFactory>();
+    private static final char[] KEYSTORE_PASSWORD = "password".toCharArray();
+    private final static String[] ENABLED_CIPHER_SUITES = {"TLS_RSA_WITH_AES_256_CBC_SHA"};
+    private final SSLSocketFactory delegate;
+    private final String serverAlias;
+    private final PrivateKey privateKey;
+    private final X509Certificate[] certificateChain;
 
-  private TrustingSSLSocketFactory(String serverAlias) {
-    try {
-      SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(new KeyManager[] {this}, new TrustManager[] {this}, new SecureRandom());
-      this.delegate = sc.getSocketFactory();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    private TrustingSSLSocketFactory(String serverAlias) {
+        try {
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(new KeyManager[]{this}, new TrustManager[]{this}, new SecureRandom());
+            this.delegate = sc.getSocketFactory();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        this.serverAlias = serverAlias;
+        if (serverAlias.isEmpty()) {
+            this.privateKey = null;
+            this.certificateChain = null;
+        } else {
+            try {
+                KeyStore keyStore =
+                        loadKeyStore(TrustingSSLSocketFactory.class.getResourceAsStream("/keystore.jks"));
+                this.privateKey = (PrivateKey) keyStore.getKey(serverAlias, KEYSTORE_PASSWORD);
+                Certificate[] rawChain = keyStore.getCertificateChain(serverAlias);
+                this.certificateChain = Arrays.copyOf(rawChain, rawChain.length, X509Certificate[].class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
-    this.serverAlias = serverAlias;
-    if (serverAlias.isEmpty()) {
-      this.privateKey = null;
-      this.certificateChain = null;
-    } else {
-      try {
-        KeyStore keyStore =
-            loadKeyStore(TrustingSSLSocketFactory.class.getResourceAsStream("/keystore.jks"));
-        this.privateKey = (PrivateKey) keyStore.getKey(serverAlias, KEYSTORE_PASSWORD);
-        Certificate[] rawChain = keyStore.getCertificateChain(serverAlias);
-        this.certificateChain = Arrays.copyOf(rawChain, rawChain.length, X509Certificate[].class);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+
+    public static SSLSocketFactory get() {
+        return get("");
     }
-  }
 
-  public static SSLSocketFactory get() {
-    return get("");
-  }
-
-  public synchronized static SSLSocketFactory get(String serverAlias) {
-    if (!sslSocketFactories.containsKey(serverAlias)) {
-      sslSocketFactories.put(serverAlias, new TrustingSSLSocketFactory(serverAlias));
+    public synchronized static SSLSocketFactory get(String serverAlias) {
+        if (!sslSocketFactories.containsKey(serverAlias)) {
+            sslSocketFactories.put(serverAlias, new TrustingSSLSocketFactory(serverAlias));
+        }
+        return sslSocketFactories.get(serverAlias);
     }
-    return sslSocketFactories.get(serverAlias);
-  }
 
-  static Socket setEnabledCipherSuites(Socket socket) {
-    SSLSocket.class.cast(socket).setEnabledCipherSuites(ENABLED_CIPHER_SUITES);
-    return socket;
-  }
-
-  private static KeyStore loadKeyStore(InputStream inputStream) throws IOException {
-    try {
-      KeyStore keyStore = KeyStore.getInstance("JKS");
-      keyStore.load(inputStream, KEYSTORE_PASSWORD);
-      return keyStore;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    } finally {
-      inputStream.close();
+    static Socket setEnabledCipherSuites(Socket socket) {
+        SSLSocket.class.cast(socket).setEnabledCipherSuites(ENABLED_CIPHER_SUITES);
+        return socket;
     }
-  }
 
-  @Override
-  public String[] getDefaultCipherSuites() {
-    return ENABLED_CIPHER_SUITES;
-  }
+    private static KeyStore loadKeyStore(InputStream inputStream) throws IOException {
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(inputStream, KEYSTORE_PASSWORD);
+            return keyStore;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            inputStream.close();
+        }
+    }
 
-  @Override
-  public String[] getSupportedCipherSuites() {
-    return ENABLED_CIPHER_SUITES;
-  }
+    @Override
+    public String[] getDefaultCipherSuites() {
+        return ENABLED_CIPHER_SUITES;
+    }
 
-  @Override
-  public Socket createSocket(Socket s, String host, int port, boolean autoClose)
-      throws IOException {
-    return setEnabledCipherSuites(delegate.createSocket(s, host, port, autoClose));
-  }
+    @Override
+    public String[] getSupportedCipherSuites() {
+        return ENABLED_CIPHER_SUITES;
+    }
 
-  @Override
-  public Socket createSocket(String host, int port) throws IOException {
-    return setEnabledCipherSuites(delegate.createSocket(host, port));
-  }
+    @Override
+    public Socket createSocket(Socket s, String host, int port, boolean autoClose)
+            throws IOException {
+        return setEnabledCipherSuites(delegate.createSocket(s, host, port, autoClose));
+    }
 
-  @Override
-  public Socket createSocket(InetAddress host, int port) throws IOException {
-    return setEnabledCipherSuites(delegate.createSocket(host, port));
-  }
+    @Override
+    public Socket createSocket(String host, int port) throws IOException {
+        return setEnabledCipherSuites(delegate.createSocket(host, port));
+    }
 
-  @Override
-  public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
-      throws IOException {
-    return setEnabledCipherSuites(delegate.createSocket(host, port, localHost, localPort));
-  }
+    @Override
+    public Socket createSocket(InetAddress host, int port) throws IOException {
+        return setEnabledCipherSuites(delegate.createSocket(host, port));
+    }
 
-  @Override
-  public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
-      throws IOException {
-    return setEnabledCipherSuites(delegate.createSocket(address, port, localAddress, localPort));
-  }
+    @Override
+    public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
+            throws IOException {
+        return setEnabledCipherSuites(delegate.createSocket(host, port, localHost, localPort));
+    }
 
-  public X509Certificate[] getAcceptedIssuers() {
-    return null;
-  }
+    @Override
+    public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort)
+            throws IOException {
+        return setEnabledCipherSuites(delegate.createSocket(address, port, localAddress, localPort));
+    }
 
-  public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+    public X509Certificate[] getAcceptedIssuers() {
+        return null;
+    }
 
-  public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+    }
 
-  @Override
-  public String[] getClientAliases(String keyType, Principal[] issuers) {
-    return null;
-  }
+    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+    }
 
-  @Override
-  public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-    return null;
-  }
+    @Override
+    public String[] getClientAliases(String keyType, Principal[] issuers) {
+        return null;
+    }
 
-  @Override
-  public String[] getServerAliases(String keyType, Principal[] issuers) {
-    return null;
-  }
+    @Override
+    public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+        return null;
+    }
 
-  @Override
-  public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-    return serverAlias;
-  }
+    @Override
+    public String[] getServerAliases(String keyType, Principal[] issuers) {
+        return null;
+    }
 
-  @Override
-  public X509Certificate[] getCertificateChain(String alias) {
-    return certificateChain;
-  }
+    @Override
+    public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+        return serverAlias;
+    }
 
-  @Override
-  public PrivateKey getPrivateKey(String alias) {
-    return privateKey;
-  }
+    @Override
+    public X509Certificate[] getCertificateChain(String alias) {
+        return certificateChain;
+    }
+
+    @Override
+    public PrivateKey getPrivateKey(String alias) {
+        return privateKey;
+    }
 }

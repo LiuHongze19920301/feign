@@ -1,9 +1,12 @@
 # Feign APT test generator
+
 This module generates mock clients for tests based on feign interfaces
 
 ## Usage
 
-Just need to add this module to dependency list and Java [Annotation Processing Tool](https://docs.oracle.com/javase/7/docs/technotes/guides/apt/GettingStarted.html) will automatically pick up the jar and generate test clients.
+Just need to add this module to dependency list and
+Java [Annotation Processing Tool](https://docs.oracle.com/javase/7/docs/technotes/guides/apt/GettingStarted.html) will
+automatically pick up the jar and generate test clients.
 
 There are 2 main alternatives to include this to a project:
 

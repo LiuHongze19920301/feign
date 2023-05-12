@@ -13,4 +13,5 @@ api = Feign.builder()
 ```
 
 [JSON]: https://www.json.org/json-en.html
+
 [JSON-java]: https://github.com/stleary/JSON-java

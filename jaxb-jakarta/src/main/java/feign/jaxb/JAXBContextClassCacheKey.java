@@ -20,24 +20,24 @@ import java.util.Objects;
  */
 final class JAXBContextClassCacheKey implements JAXBContextCacheKey {
 
-  private final Class<?> clazz;
+    private final Class<?> clazz;
 
-  JAXBContextClassCacheKey(Class<?> clazz) {
-    this.clazz = clazz;
-  }
+    JAXBContextClassCacheKey(Class<?> clazz) {
+        this.clazz = clazz;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    JAXBContextClassCacheKey that = (JAXBContextClassCacheKey) o;
-    return clazz.equals(that.clazz);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        JAXBContextClassCacheKey that = (JAXBContextClassCacheKey) o;
+        return clazz.equals(that.clazz);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(clazz);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz);
+    }
 }

@@ -14,6 +14,7 @@
 package example.wikipedia;
 
 import java.util.ArrayList;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,34 +23,33 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class WikipediaClient {
 
 
-
-  @FeignClient(value = "jplaceholder", url = "https://en.wikipedia.org/",
-      configuration = WikipediaClientConfiguration.class)
-  public static interface Wikipedia {
-
-
-    @RequestMapping(method = RequestMethod.GET,
-        value = "/w/api.php?action=query&continue=&generator=search&prop=info&format=json&gsrsearch={search}")
-    Response<Page> search(@PathVariable("search") String search);
+    @FeignClient(value = "jplaceholder", url = "https://en.wikipedia.org/",
+            configuration = WikipediaClientConfiguration.class)
+    public static interface Wikipedia {
 
 
-    @RequestMapping(method = RequestMethod.GET,
-        value = "/w/api.php?action=query&continue=&generator=search&prop=info&format=json&gsrsearch={search}&gsroffset={offset}")
-    Response<Page> resumeSearch(@PathVariable("search") String search,
-                                @PathVariable("offset") long offset);
-  }
+        @RequestMapping(method = RequestMethod.GET,
+                value = "/w/api.php?action=query&continue=&generator=search&prop=info&format=json&gsrsearch={search}")
+        Response<Page> search(@PathVariable("search") String search);
 
-  static class Page {
 
-    long id;
-    String title;
-  }
+        @RequestMapping(method = RequestMethod.GET,
+                value = "/w/api.php?action=query&continue=&generator=search&prop=info&format=json&gsrsearch={search}&gsroffset={offset}")
+        Response<Page> resumeSearch(@PathVariable("search") String search,
+                                    @PathVariable("offset") long offset);
+    }
 
-  public static class Response<X> extends ArrayList<X> {
+    static class Page {
 
-    /**
-     * when present, the position to resume the list.
-     */
-    Long nextOffset;
-  }
+        long id;
+        String title;
+    }
+
+    public static class Response<X> extends ArrayList<X> {
+
+        /**
+         * when present, the position to resume the list.
+         */
+        Long nextOffset;
+    }
 }

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.jr.ob.api.ValueReader;
 import com.fasterxml.jackson.jr.ob.api.ValueWriter;
 import com.fasterxml.jackson.jr.ob.impl.JSONReader;
 import com.fasterxml.jackson.jr.ob.impl.JSONWriter;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,44 +32,44 @@ import java.time.format.DateTimeFormatter;
  * adds Java Time support to Jackson JR
  */
 public class JavaLocalDateExtension extends JacksonJrExtension {
-  private static class LocalDateReaderWriterProvider extends ReaderWriterProvider {
-    @Override
-    public ValueReader findValueReader(JSONReader readContext, Class<?> type) {
-      return type == LocalDate.class ? new LocalDateValueReader() : null;
+    private static class LocalDateReaderWriterProvider extends ReaderWriterProvider {
+        @Override
+        public ValueReader findValueReader(JSONReader readContext, Class<?> type) {
+            return type == LocalDate.class ? new LocalDateValueReader() : null;
+        }
+
+        @Override
+        public ValueWriter findValueWriter(JSONWriter writeContext, Class<?> type) {
+            return type == LocalDate.class ? new LocalDateValueWriter() : null;
+        }
+    }
+
+    private static class LocalDateValueReader extends ValueReader {
+        protected LocalDateValueReader() {
+            super(LocalDate.class);
+        }
+
+        @Override
+        public Object read(JSONReader reader, JsonParser p) throws IOException {
+            return LocalDate.parse(p.getText(), DateTimeFormatter.ISO_LOCAL_DATE);
+        }
+    }
+
+    private static class LocalDateValueWriter implements ValueWriter {
+        @Override
+        public void writeValue(JSONWriter context, JsonGenerator g, Object value) throws IOException {
+            context.writeValue(((LocalDate) value).format(DateTimeFormatter.ISO_LOCAL_DATE));
+        }
+
+        @Override
+        public Class<?> valueType() {
+            return LocalDate.class;
+        }
     }
 
     @Override
-    public ValueWriter findValueWriter(JSONWriter writeContext, Class<?> type) {
-      return type == LocalDate.class ? new LocalDateValueWriter() : null;
+    protected void register(ExtensionContext ctxt) {
+        ctxt.insertProvider(new LocalDateReaderWriterProvider());
     }
-  }
-
-  private static class LocalDateValueReader extends ValueReader {
-    protected LocalDateValueReader() {
-      super(LocalDate.class);
-    }
-
-    @Override
-    public Object read(JSONReader reader, JsonParser p) throws IOException {
-      return LocalDate.parse(p.getText(), DateTimeFormatter.ISO_LOCAL_DATE);
-    }
-  }
-
-  private static class LocalDateValueWriter implements ValueWriter {
-    @Override
-    public void writeValue(JSONWriter context, JsonGenerator g, Object value) throws IOException {
-      context.writeValue(((LocalDate) value).format(DateTimeFormatter.ISO_LOCAL_DATE));
-    }
-
-    @Override
-    public Class<?> valueType() {
-      return LocalDate.class;
-    }
-  }
-
-  @Override
-  protected void register(ExtensionContext ctxt) {
-    ctxt.insertProvider(new LocalDateReaderWriterProvider());
-  }
 }
 

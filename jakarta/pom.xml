@@ -14,54 +14,55 @@
     the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>io.github.openfeign</groupId>
-    <artifactId>parent</artifactId>
-    <version>12.4-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>parent</artifactId>
+        <version>12.4-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>feign-jakarta</artifactId>
-  <name>Feign Jakarta</name>
-  <description>Feign Jakarta</description>
+    <artifactId>feign-jakarta</artifactId>
+    <name>Feign Jakarta</name>
+    <description>Feign Jakarta</description>
 
-  <properties>
-    <main.java.version>11</main.java.version>
-    <main.basedir>${project.basedir}/..</main.basedir>
-  </properties>
+    <properties>
+        <main.java.version>11</main.java.version>
+        <main.basedir>${project.basedir}/..</main.basedir>
+    </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>feign-core</artifactId>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>feign-core</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>jakarta.ws.rs</groupId>
-      <artifactId>jakarta.ws.rs-api</artifactId>
-      <version>3.1.0</version>
-    </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 
-    <!-- for example -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>feign-gson</artifactId>
-      <scope>test</scope>
-    </dependency>
+        <!-- for example -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>feign-gson</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>feign-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>feign-jaxrs</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>feign-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>feign-jaxrs</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

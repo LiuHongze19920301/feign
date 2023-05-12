@@ -24,15 +24,15 @@ import java.util.function.Function;
  */
 public interface ResponseInterceptor {
 
-  ResponseInterceptor DEFAULT = InvocationContext::proceed;
+    ResponseInterceptor DEFAULT = InvocationContext::proceed;
 
-  /**
-   * Called for response around decode, must either manually invoke
-   * {@link InvocationContext#proceed} or manually create a new response object
-   *
-   * @param invocationContext information surrounding the response been decoded
-   * @return decoded response
-   */
-  Object aroundDecode(InvocationContext invocationContext) throws IOException;
+    /**
+     * Called for response around decode, must either manually invoke
+     * {@link InvocationContext#proceed} or manually create a new response object
+     *
+     * @param invocationContext information surrounding the response been decoded
+     * @return decoded response
+     */
+    Object aroundDecode(InvocationContext invocationContext) throws IOException;
 
 }

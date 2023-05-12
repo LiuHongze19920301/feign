@@ -20,62 +20,62 @@ import io.micrometer.observation.docs.ObservationDocumentation;
 
 /**
  * {@link ObservationDocumentation} for Feign.
- * 
+ *
  * @since 12.1
  */
 public enum FeignObservationDocumentation implements ObservationDocumentation {
 
-  DEFAULT {
-    @Override
-    public Class<? extends ObservationConvention<? extends Observation.Context>> getDefaultConvention() {
-      return DefaultFeignObservationConvention.class;
+    DEFAULT {
+        @Override
+        public Class<? extends ObservationConvention<? extends Observation.Context>> getDefaultConvention() {
+            return DefaultFeignObservationConvention.class;
+        }
+
+        @Override
+        public KeyName[] getLowCardinalityKeyNames() {
+            return HttpClientTags.values();
+        }
+    };
+
+    enum HttpClientTags implements KeyName {
+
+        STATUS {
+            @Override
+            public String asString() {
+                return "http.status_code";
+            }
+        },
+        METHOD {
+            @Override
+            public String asString() {
+                return "http.method";
+            }
+        },
+        URI {
+            @Override
+            public String asString() {
+                return "http.url";
+            }
+        },
+        TARGET_SCHEME {
+            @Override
+            public String asString() {
+                return "http.scheme";
+            }
+        },
+        TARGET_HOST {
+            @Override
+            public String asString() {
+                return "net.peer.host";
+            }
+        },
+        TARGET_PORT {
+            @Override
+            public String asString() {
+                return "net.peer.port";
+            }
+        }
+
     }
-
-    @Override
-    public KeyName[] getLowCardinalityKeyNames() {
-      return HttpClientTags.values();
-    }
-  };
-
-  enum HttpClientTags implements KeyName {
-
-    STATUS {
-      @Override
-      public String asString() {
-        return "http.status_code";
-      }
-    },
-    METHOD {
-      @Override
-      public String asString() {
-        return "http.method";
-      }
-    },
-    URI {
-      @Override
-      public String asString() {
-        return "http.url";
-      }
-    },
-    TARGET_SCHEME {
-      @Override
-      public String asString() {
-        return "http.scheme";
-      }
-    },
-    TARGET_HOST {
-      @Override
-      public String asString() {
-        return "net.peer.host";
-      }
-    },
-    TARGET_PORT {
-      @Override
-      public String asString() {
-        return "net.peer.port";
-      }
-    }
-
-  }
 
 }

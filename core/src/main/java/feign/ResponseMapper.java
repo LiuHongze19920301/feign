@@ -38,5 +38,5 @@ import java.lang.reflect.Type;
  */
 public interface ResponseMapper {
 
-  Response map(Response response, Type type);
+    Response map(Response response, Type type);
 }

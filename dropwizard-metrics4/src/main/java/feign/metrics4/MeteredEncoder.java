@@ -15,6 +15,7 @@ package feign.metrics4;
 
 
 import java.lang.reflect.Type;
+
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import feign.RequestTemplate;
@@ -26,34 +27,34 @@ import feign.codec.Encoder;
  */
 public class MeteredEncoder implements Encoder {
 
-  private final Encoder encoder;
-  private final MetricRegistry metricRegistry;
-  private final MetricSuppliers metricSuppliers;
-  private final FeignMetricName metricName;
+    private final Encoder encoder;
+    private final MetricRegistry metricRegistry;
+    private final MetricSuppliers metricSuppliers;
+    private final FeignMetricName metricName;
 
-  public MeteredEncoder(Encoder encoder, MetricRegistry metricRegistry,
-      MetricSuppliers metricSuppliers) {
-    this.encoder = encoder;
-    this.metricRegistry = metricRegistry;
-    this.metricSuppliers = metricSuppliers;
-    this.metricName = new FeignMetricName(Encoder.class);
-  }
-
-  @Override
-  public void encode(Object object, Type bodyType, RequestTemplate template)
-      throws EncodeException {
-    try (final Timer.Context classTimer =
-        metricRegistry.timer(
-            metricName.metricName(template.methodMetadata(), template.feignTarget()),
-            metricSuppliers.timers()).time()) {
-      encoder.encode(object, bodyType, template);
+    public MeteredEncoder(Encoder encoder, MetricRegistry metricRegistry,
+                          MetricSuppliers metricSuppliers) {
+        this.encoder = encoder;
+        this.metricRegistry = metricRegistry;
+        this.metricSuppliers = metricSuppliers;
+        this.metricName = new FeignMetricName(Encoder.class);
     }
 
-    if (template.body() != null) {
-      metricRegistry.histogram(
-          metricName.metricName(template.methodMetadata(), template.feignTarget(), "request_size"),
-          metricSuppliers.histograms()).update(template.body().length);
+    @Override
+    public void encode(Object object, Type bodyType, RequestTemplate template)
+            throws EncodeException {
+        try (final Timer.Context classTimer =
+                     metricRegistry.timer(
+                             metricName.metricName(template.methodMetadata(), template.feignTarget()),
+                             metricSuppliers.timers()).time()) {
+            encoder.encode(object, bodyType, template);
+        }
+
+        if (template.body() != null) {
+            metricRegistry.histogram(
+                    metricName.metricName(template.methodMetadata(), template.feignTarget(), "request_size"),
+                    metricSuppliers.histograms()).update(template.body().length);
+        }
     }
-  }
 
 }

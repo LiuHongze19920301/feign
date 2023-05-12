@@ -16,6 +16,7 @@ package feign;
 import java.lang.annotation.Retention;
 import java.util.List;
 import java.util.Map;
+
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -34,14 +35,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * can be cumbersome (it requires more code for per-method customization, it is difficult to
  * implement in a thread-safe manner and it requires customization when the Feign client for the API
  * is built). <br>
- * 
+ *
  * <pre>
  * ...
  * &#64;RequestLine("GET /servers/{serverId}")
  * void get(&#64;Param("serverId") String serverId, &#64;HeaderMap Map<String, Object>);
  * ...
  * </pre>
- * 
+ * <p>
  * The annotated parameter must be an instance of {@link Map}, and the keys must be Strings. The
  * header field value of a key will be the value of its toString method, except in the following
  * cases: <br>

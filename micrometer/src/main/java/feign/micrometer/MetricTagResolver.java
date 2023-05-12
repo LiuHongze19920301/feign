@@ -17,17 +17,18 @@ import feign.MethodMetadata;
 import feign.Target;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+
 import java.lang.reflect.Method;
 
 public interface MetricTagResolver {
 
-  Tag[] EMPTY_TAGS_ARRAY = new Tag[] {};
+    Tag[] EMPTY_TAGS_ARRAY = new Tag[]{};
 
-  Tags tag(MethodMetadata methodMetadata, Target<?> target, Tag... tags);
+    Tags tag(MethodMetadata methodMetadata, Target<?> target, Tag... tags);
 
-  Tags tag(MethodMetadata methodMetadata, Target<?> target, Throwable e, Tag... tags);
+    Tags tag(MethodMetadata methodMetadata, Target<?> target, Throwable e, Tag... tags);
 
-  Tags tag(Class<?> targetType, Method method, String url, Tag... extraTags);
+    Tags tag(Class<?> targetType, Method method, String url, Tag... extraTags);
 
-  Tags tag(Class<?> targetType, Method method, String url, Throwable e, Tag... extraTags);
+    Tags tag(Class<?> targetType, Method method, String url, Throwable e, Tag... extraTags);
 }

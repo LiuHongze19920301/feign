@@ -97,7 +97,8 @@ interface GitHub {
                         // not available when building PRs...
                         // https://docs.travis-ci.com/user/environment-variables/#defining-encrypted-variables-in-travisyml
                         "Authorization",
-                        "token 383f1c1b474d8f05a21e7964976ab0d403fee071");
+                        "token 383f1c1b474d8f05a21e7964976ab0d403fee071"
+                    );
                 }
                 .options(Request.Options(10, TimeUnit.SECONDS, 60, TimeUnit.SECONDS, true))
                 .target(GitHub::class.java, "https://api.github.com")

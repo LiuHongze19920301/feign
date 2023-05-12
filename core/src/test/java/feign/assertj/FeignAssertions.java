@@ -18,7 +18,7 @@ import feign.RequestTemplate;
 
 public class FeignAssertions extends Assertions {
 
-  public static RequestTemplateAssert assertThat(RequestTemplate actual) {
-    return new RequestTemplateAssert(actual);
-  }
+    public static RequestTemplateAssert assertThat(RequestTemplate actual) {
+        return new RequestTemplateAssert(actual);
+    }
 }

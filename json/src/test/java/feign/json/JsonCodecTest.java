@@ -24,8 +24,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
+
 import static feign.Util.toByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -36,58 +38,58 @@ import static org.junit.Assert.assertNotNull;
 
 interface GitHub {
 
-  @RequestLine("GET /repos/{owner}/{repo}/contributors")
-  JSONArray contributors(@Param("owner") String owner, @Param("repo") String repo);
+    @RequestLine("GET /repos/{owner}/{repo}/contributors")
+    JSONArray contributors(@Param("owner") String owner, @Param("repo") String repo);
 
-  @RequestLine("POST /repos/{owner}/{repo}/contributors")
-  JSONObject create(@Param("owner") String owner,
-                    @Param("repo") String repo,
-                    JSONObject contributor);
+    @RequestLine("POST /repos/{owner}/{repo}/contributors")
+    JSONObject create(@Param("owner") String owner,
+                      @Param("repo") String repo,
+                      JSONObject contributor);
 
 }
 
 
 public class JsonCodecTest {
 
-  private GitHub github;
-  private MockClient mockClient;
+    private GitHub github;
+    private MockClient mockClient;
 
-  @Before
-  public void setUp() {
-    mockClient = new MockClient();
-    github = Feign.builder()
-        .decoder(new JsonDecoder())
-        .encoder(new JsonEncoder())
-        .client(mockClient)
-        .target(new MockTarget<>(GitHub.class));
-  }
-
-  @Test
-  public void decodes() throws IOException {
-    try (InputStream input = getClass().getResourceAsStream("/fixtures/contributors.json")) {
-      byte[] response = toByteArray(input);
-      mockClient.ok(HttpMethod.GET, "/repos/openfeign/feign/contributors", response);
-      JSONArray contributors = github.contributors("openfeign", "feign");
-      assertThat(contributors.toList(), hasSize(30));
-      contributors.forEach(contributor -> ((JSONObject) contributor).getString("login"));
+    @Before
+    public void setUp() {
+        mockClient = new MockClient();
+        github = Feign.builder()
+                .decoder(new JsonDecoder())
+                .encoder(new JsonEncoder())
+                .client(mockClient)
+                .target(new MockTarget<>(GitHub.class));
     }
-  }
 
-  @Test
-  public void encodes() {
-    JSONObject contributor = new JSONObject();
-    contributor.put("login", "radio-rogal");
-    contributor.put("contributions", 0);
-    mockClient.ok(HttpMethod.POST, "/repos/openfeign/feign/contributors",
-        "{\"login\":\"radio-rogal\",\"contributions\":0}");
-    JSONObject response = github.create("openfeign", "feign", contributor);
-    Request request = mockClient.verifyOne(HttpMethod.POST, "/repos/openfeign/feign/contributors");
-    assertNotNull(request.body());
-    String json = new String(request.body());
-    assertThat(json, containsString("\"login\":\"radio-rogal\""));
-    assertThat(json, containsString("\"contributions\":0"));
-    assertEquals("radio-rogal", response.getString("login"));
-    assertEquals(0, response.getInt("contributions"));
-  }
+    @Test
+    public void decodes() throws IOException {
+        try (InputStream input = getClass().getResourceAsStream("/fixtures/contributors.json")) {
+            byte[] response = toByteArray(input);
+            mockClient.ok(HttpMethod.GET, "/repos/openfeign/feign/contributors", response);
+            JSONArray contributors = github.contributors("openfeign", "feign");
+            assertThat(contributors.toList(), hasSize(30));
+            contributors.forEach(contributor -> ((JSONObject) contributor).getString("login"));
+        }
+    }
+
+    @Test
+    public void encodes() {
+        JSONObject contributor = new JSONObject();
+        contributor.put("login", "radio-rogal");
+        contributor.put("contributions", 0);
+        mockClient.ok(HttpMethod.POST, "/repos/openfeign/feign/contributors",
+                "{\"login\":\"radio-rogal\",\"contributions\":0}");
+        JSONObject response = github.create("openfeign", "feign", contributor);
+        Request request = mockClient.verifyOne(HttpMethod.POST, "/repos/openfeign/feign/contributors");
+        assertNotNull(request.body());
+        String json = new String(request.body());
+        assertThat(json, containsString("\"login\":\"radio-rogal\""));
+        assertThat(json, containsString("\"contributions\":0"));
+        assertEquals("radio-rogal", response.getString("login"));
+        assertEquals(0, response.getInt("contributions"));
+    }
 
 }

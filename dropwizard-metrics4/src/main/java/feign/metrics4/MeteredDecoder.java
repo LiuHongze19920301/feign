@@ -16,6 +16,7 @@ package feign.metrics4;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import feign.FeignException;
@@ -29,49 +30,49 @@ import feign.codec.Decoder;
  */
 public class MeteredDecoder implements Decoder {
 
-  private final Decoder decoder;
-  private final MetricRegistry metricRegistry;
-  private final MetricSuppliers metricSuppliers;
-  private final FeignMetricName metricName;
+    private final Decoder decoder;
+    private final MetricRegistry metricRegistry;
+    private final MetricSuppliers metricSuppliers;
+    private final FeignMetricName metricName;
 
-  public MeteredDecoder(Decoder decoder, MetricRegistry metricRegistry,
-      MetricSuppliers metricSuppliers) {
-    this.decoder = decoder;
-    this.metricRegistry = metricRegistry;
-    this.metricSuppliers = metricSuppliers;
-    this.metricName = new FeignMetricName(Decoder.class);
-  }
-
-  @Override
-  public Object decode(Response response, Type type)
-      throws IOException, DecodeException, FeignException {
-    final RequestTemplate template = response.request().requestTemplate();
-    final MeteredBody body = response.body() == null
-        ? null
-        : new MeteredBody(response.body());
-
-    response = response.toBuilder().body(body).build();
-
-    final Object decoded;
-    try (final Timer.Context classTimer =
-        metricRegistry
-            .timer(
-                MetricRegistry.name(
-                    metricName.metricName(template.methodMetadata(), template.feignTarget()),
-                    "uri", template.methodMetadata().template().path()),
-                metricSuppliers.timers())
-            .time()) {
-      decoded = decoder.decode(response, type);
+    public MeteredDecoder(Decoder decoder, MetricRegistry metricRegistry,
+                          MetricSuppliers metricSuppliers) {
+        this.decoder = decoder;
+        this.metricRegistry = metricRegistry;
+        this.metricSuppliers = metricSuppliers;
+        this.metricName = new FeignMetricName(Decoder.class);
     }
 
-    if (body != null) {
-      metricRegistry.histogram(
-          metricName.metricName(template.methodMetadata(), template.feignTarget(),
-              "response_size"),
-          metricSuppliers.histograms()).update(body.count());
-    }
+    @Override
+    public Object decode(Response response, Type type)
+            throws IOException, DecodeException, FeignException {
+        final RequestTemplate template = response.request().requestTemplate();
+        final MeteredBody body = response.body() == null
+                ? null
+                : new MeteredBody(response.body());
 
-    return decoded;
-  }
+        response = response.toBuilder().body(body).build();
+
+        final Object decoded;
+        try (final Timer.Context classTimer =
+                     metricRegistry
+                             .timer(
+                                     MetricRegistry.name(
+                                             metricName.metricName(template.methodMetadata(), template.feignTarget()),
+                                             "uri", template.methodMetadata().template().path()),
+                                     metricSuppliers.timers())
+                             .time()) {
+            decoded = decoder.decode(response, type);
+        }
+
+        if (body != null) {
+            metricRegistry.histogram(
+                    metricName.metricName(template.methodMetadata(), template.feignTarget(),
+                            "response_size"),
+                    metricSuppliers.histograms()).update(body.count());
+        }
+
+        return decoded;
+    }
 
 }

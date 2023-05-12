@@ -16,6 +16,7 @@ package feign;
 import java.lang.annotation.Retention;
 import java.util.List;
 import java.util.Map;
+
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -26,7 +27,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * precedence over any previously specified query parameters. It is not necessary to reference the
  * parameter map as a variable. <br>
  * <br>
- * 
+ *
  * <pre>
  * ...
  * &#64;RequestLine("POST /servers")
@@ -37,7 +38,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * void get(&#64;Param("serverId") String serverId, &#64;Param("count") int count, &#64;QueryMap Map<String, Object>);
  * ...
  * </pre>
- * 
+ * <p>
  * The annotated parameter must be an instance of {@link Map}, and the keys must be Strings. The
  * query value of a key will be the value of its toString method, except in the following cases:
  * <br>
@@ -57,17 +58,17 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @java.lang.annotation.Target(PARAMETER)
 public @interface QueryMap {
 
-  /**
-   * Specifies whether parameter names and values are already encoded.
-   * <p>
-   * Deprecation: there are two options
-   * <ul>
-   * <li>if name or value are already encoded we do nothing;</li>
-   * <li>if name or value are not encoded we encode them.</li>
-   * </ul>
-   *
-   * @see Param#encoded
-   * @deprecated
-   */
-  boolean encoded() default false;
+    /**
+     * Specifies whether parameter names and values are already encoded.
+     * <p>
+     * Deprecation: there are two options
+     * <ul>
+     * <li>if name or value are already encoded we do nothing;</li>
+     * <li>if name or value are not encoded we encode them.</li>
+     * </ul>
+     *
+     * @see Param#encoded
+     * @deprecated
+     */
+    boolean encoded() default false;
 }

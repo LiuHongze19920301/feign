@@ -1,7 +1,8 @@
 Hystrix
 ===================
 
-This module wraps Feign's http requests in [Hystrix](https://github.com/Netflix/Hystrix/), which enables the [Circuit Breaker Pattern](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern).
+This module wraps Feign's http requests in [Hystrix](https://github.com/Netflix/Hystrix/), which enables
+the [Circuit Breaker Pattern](https://en.wikipedia.org/wiki/Circuit_breaker_design_pattern).
 
 To use Hystrix with Feign, add the Hystrix module to your classpath. Then, configure Feign to use the `HystrixInvocationHandler`:
 
@@ -12,9 +13,13 @@ GitHub github = HystrixFeign.builder()
 
 For asynchronous or reactive use, return `HystrixCommand<YourType>` or `CompletableFuture<YourType>`.
 
-For RxJava compatibility, use `rx.Observable<YourType>` or `rx.Single<YourType>`. Rx types are <a href="http://reactivex.io/documentation/observable.html">cold</a>, which means a http call isn't made until there's a subscriber.
+For RxJava compatibility, use `rx.Observable<YourType>` or `rx.Single<YourType>`. Rx types
+are <a href="http://reactivex.io/documentation/observable.html">cold</a>, which means a http call isn't made until there's a
+subscriber.
 
-Methods that do *not* return [`HystrixCommand`](https://netflix.github.io/Hystrix/javadoc/com/netflix/hystrix/HystrixCommand.html), `CompletableFuture`, [`rx.Observable`](http://reactivex.io/RxJava/javadoc/rx/Observable.html) or `rx.Single` are still wrapped in a `HystrixCommand`, but `execute()` is automatically called for you.
+Methods that do *not*
+return [`HystrixCommand`](https://netflix.github.io/Hystrix/javadoc/com/netflix/hystrix/HystrixCommand.html), `CompletableFuture`, [`rx.Observable`](http://reactivex.io/RxJava/javadoc/rx/Observable.html)
+or `rx.Single` are still wrapped in a `HystrixCommand`, but `execute()` is automatically called for you.
 
 ```java
 interface YourApi {
@@ -70,6 +75,7 @@ You can use `HystrixFeign.Builder#setterFactory(SetterFactory)` to customize thi
 read key mappings from configuration or annotations.
 
 Ex.
+
 ```java
 SetterFactory commandKeyIsRequestLine = (target, method) -> {
   String groupKey = target.name();

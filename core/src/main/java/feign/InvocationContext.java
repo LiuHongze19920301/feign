@@ -14,45 +14,47 @@
 package feign;
 
 import static feign.FeignException.errorReading;
+
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 
 public class InvocationContext {
 
-  private final Decoder decoder;
-  private final Type returnType;
-  private final Response response;
+    private final Decoder decoder;
+    private final Type returnType;
+    private final Response response;
 
-  InvocationContext(Decoder decoder, Type returnType, Response response) {
-    this.decoder = decoder;
-    this.returnType = returnType;
-    this.response = response;
-  }
-
-  public Object proceed() {
-    try {
-      return decoder.decode(response, returnType);
-    } catch (final FeignException e) {
-      throw e;
-    } catch (final RuntimeException e) {
-      throw new DecodeException(response.status(), e.getMessage(), response.request(), e);
-    } catch (IOException e) {
-      throw errorReading(response.request(), response, e);
+    InvocationContext(Decoder decoder, Type returnType, Response response) {
+        this.decoder = decoder;
+        this.returnType = returnType;
+        this.response = response;
     }
-  }
 
-  public Decoder decoder() {
-    return decoder;
-  }
+    public Object proceed() {
+        try {
+            return decoder.decode(response, returnType);
+        } catch (final FeignException e) {
+            throw e;
+        } catch (final RuntimeException e) {
+            throw new DecodeException(response.status(), e.getMessage(), response.request(), e);
+        } catch (IOException e) {
+            throw errorReading(response.request(), response, e);
+        }
+    }
 
-  public Type returnType() {
-    return returnType;
-  }
+    public Decoder decoder() {
+        return decoder;
+    }
 
-  public Response response() {
-    return response;
-  }
+    public Type returnType() {
+        return returnType;
+    }
+
+    public Response response() {
+        return response;
+    }
 
 }

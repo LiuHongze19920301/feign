@@ -20,30 +20,30 @@ import com.fasterxml.jackson.jr.ob.JacksonJrExtension;
  * Common implementation of the holder of a {@link JSON}, DRYing out construction.
  */
 abstract class JacksonJrMapper {
-  protected final JSON mapper;
+    protected final JSON mapper;
 
-  protected JacksonJrMapper() {
-    this(JSON.std);
-  }
+    protected JacksonJrMapper() {
+        this(JSON.std);
+    }
 
-  /**
-   * Construct with a custom {@link JSON} to use for decoding/encoding
-   * 
-   * @param mapper the mapper to use
-   */
-  protected JacksonJrMapper(JSON mapper) {
-    this.mapper = mapper;
-  }
+    /**
+     * Construct with a custom {@link JSON} to use for decoding/encoding
+     *
+     * @param mapper the mapper to use
+     */
+    protected JacksonJrMapper(JSON mapper) {
+        this.mapper = mapper;
+    }
 
-  /**
-   * Construct with a series of {@link JacksonJrExtension} objects that are registered into the
-   * {@link JSON}
-   * 
-   * @param iterable the source of the extensions
-   */
-  protected JacksonJrMapper(Iterable<JacksonJrExtension> iterable) {
-    JSON.Builder builder = JSON.builder();
-    iterable.forEach(builder::register);
-    this.mapper = builder.build();
-  }
+    /**
+     * Construct with a series of {@link JacksonJrExtension} objects that are registered into the
+     * {@link JSON}
+     *
+     * @param iterable the source of the extensions
+     */
+    protected JacksonJrMapper(Iterable<JacksonJrExtension> iterable) {
+        JSON.Builder builder = JSON.builder();
+        iterable.forEach(builder::register);
+        this.mapper = builder.build();
+    }
 }

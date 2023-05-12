@@ -14,15 +14,16 @@
 package feign.benchmark;
 
 
-
 import feign.Feign;
 import feign.Logger;
 import feign.Logger.Level;
 import feign.Response;
 import feign.Retryer;
 import io.reactivex.netty.protocol.http.server.HttpServer;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
 import io.netty.buffer.ByteBuf;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -46,53 +47,53 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class RealRequestBenchmarks {
 
-  private static final int SERVER_PORT = 8765;
-  private HttpServer<ByteBuf, ByteBuf> server;
-  private OkHttpClient client;
-  private FeignTestInterface okFeign;
-  private Request queryRequest;
+    private static final int SERVER_PORT = 8765;
+    private HttpServer<ByteBuf, ByteBuf> server;
+    private OkHttpClient client;
+    private FeignTestInterface okFeign;
+    private Request queryRequest;
 
-  @Setup
-  public void setup() {
+    @Setup
+    public void setup() {
 
-    server = HttpServer.newServer(SERVER_PORT)
-        .start((request, response) -> null);
-    client = new OkHttpClient();
-    client.retryOnConnectionFailure();
-    okFeign = Feign.builder()
-        .client(new feign.okhttp.OkHttpClient(client))
-        .logLevel(Level.NONE)
-        .logger(new Logger.ErrorLogger())
-        .retryer(new Retryer.Default())
-        .target(FeignTestInterface.class, "http://localhost:" + SERVER_PORT);
-    queryRequest = new Request.Builder()
-        .url("http://localhost:" + SERVER_PORT + "/?Action=GetUser&Version=2010-05-08&limit=1")
-        .build();
-  }
-
-  @TearDown
-  public void tearDown() throws InterruptedException {
-    server.shutdown();
-  }
-
-  /**
-   * How fast can we execute get commands synchronously?
-   */
-  @Benchmark
-  public okhttp3.Response query_baseCaseUsingOkHttp() throws IOException {
-    okhttp3.Response result = client.newCall(queryRequest).execute();
-    result.body().close();
-    return result;
-  }
-
-  /**
-   * How fast can we execute get commands synchronously using Feign?
-   */
-  @Benchmark
-  public boolean query_feignUsingOkHttp() {
-    /* auto close the response */
-    try (Response ignored = okFeign.query()) {
-      return true;
+        server = HttpServer.newServer(SERVER_PORT)
+                .start((request, response) -> null);
+        client = new OkHttpClient();
+        client.retryOnConnectionFailure();
+        okFeign = Feign.builder()
+                .client(new feign.okhttp.OkHttpClient(client))
+                .logLevel(Level.NONE)
+                .logger(new Logger.ErrorLogger())
+                .retryer(new Retryer.Default())
+                .target(FeignTestInterface.class, "http://localhost:" + SERVER_PORT);
+        queryRequest = new Request.Builder()
+                .url("http://localhost:" + SERVER_PORT + "/?Action=GetUser&Version=2010-05-08&limit=1")
+                .build();
     }
-  }
+
+    @TearDown
+    public void tearDown() throws InterruptedException {
+        server.shutdown();
+    }
+
+    /**
+     * How fast can we execute get commands synchronously?
+     */
+    @Benchmark
+    public okhttp3.Response query_baseCaseUsingOkHttp() throws IOException {
+        okhttp3.Response result = client.newCall(queryRequest).execute();
+        result.body().close();
+        return result;
+    }
+
+    /**
+     * How fast can we execute get commands synchronously using Feign?
+     */
+    @Benchmark
+    public boolean query_feignUsingOkHttp() {
+        /* auto close the response */
+        try (Response ignored = okFeign.query()) {
+            return true;
+        }
+    }
 }
