@@ -16,6 +16,7 @@ package feign;
 import java.lang.reflect.Type;
 
 /**
+ * 在对Response进行解码之前,可以对Response进行处理,映射处理
  * Map function to apply to the response before decoding it.
  *
  * <pre>
@@ -38,5 +39,6 @@ import java.lang.reflect.Type;
  */
 public interface ResponseMapper {
 
-  Response map(Response response, Type type);
+    Response map(Response response, Type type);
+
 }

@@ -17,6 +17,7 @@ import java.lang.annotation.*;
 import java.lang.annotation.Target;
 
 /**
+ * 不稳定,可能被移除的标志注解
  * Indicates that a public API (public class, method or field) is subject to incompatible changes,
  * or even removal, in a future release. An API bearing this annotation is exempt from any
  * compatibility guarantees made by its containing library. Note that the presence of this

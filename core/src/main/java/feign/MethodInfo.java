@@ -18,34 +18,39 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * 方法信息的封装
+ */
 @Experimental
 public class MethodInfo {
-  private final Type underlyingReturnType;
-  private final boolean asyncReturnType;
+    private final Type underlyingReturnType;
+    private final boolean asyncReturnType;
 
-  protected MethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
-    this.underlyingReturnType = underlyingReturnType;
-    this.asyncReturnType = asyncReturnType;
-  }
-
-  MethodInfo(Class<?> targetType, Method method) {
-    final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
-
-    if (type instanceof ParameterizedType
-        && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
-      this.asyncReturnType = true;
-      this.underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
-    } else {
-      this.asyncReturnType = false;
-      this.underlyingReturnType = type;
+    protected MethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
+        this.underlyingReturnType = underlyingReturnType;
+        this.asyncReturnType = asyncReturnType;
     }
-  }
 
-  Type underlyingReturnType() {
-    return underlyingReturnType;
-  }
+    MethodInfo(Class<?> targetType, Method method) {
+        // 获取方法返回类型
+        final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
 
-  boolean isAsyncReturnType() {
-    return asyncReturnType;
-  }
+        // 如果返回类型是CompletableFuture,则设置asyncReturnType为true,并且获取CompletableFuture的泛型参数
+        if (type instanceof ParameterizedType
+            && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
+            this.asyncReturnType = true;
+            this.underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
+        } else {
+            this.asyncReturnType = false;
+            this.underlyingReturnType = type;
+        }
+    }
+
+    Type underlyingReturnType() {
+        return underlyingReturnType;
+    }
+
+    boolean isAsyncReturnType() {
+        return asyncReturnType;
+    }
 }

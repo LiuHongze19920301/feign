@@ -27,49 +27,49 @@ import java.nio.charset.Charset;
  */
 public class UriTemplate extends Template {
 
-  /**
-   * Create a Uri Template.
-   *
-   * @param template representing the uri.
-   * @param charset for encoding.
-   * @return a new Uri Template instance.
-   */
-  public static UriTemplate create(String template, Charset charset) {
-    return new UriTemplate(template, true, charset);
-  }
+    /**
+     * Create a Uri Template.
+     *
+     * @param template representing the uri.
+     * @param charset  for encoding.
+     * @return a new Uri Template instance.
+     */
+    public static UriTemplate create(String template, Charset charset) {
+        return new UriTemplate(template, true, charset);
+    }
 
-  /**
-   * Create a Uri Template.
-   *
-   * @param template representing the uri
-   * @param encodeSlash flag if slash characters should be encoded.
-   * @param charset for the template.
-   * @return a new Uri Template instance.
-   */
-  public static UriTemplate create(String template, boolean encodeSlash, Charset charset) {
-    return new UriTemplate(template, encodeSlash, charset);
-  }
+    /**
+     * Create a Uri Template.
+     *
+     * @param template    representing the uri
+     * @param encodeSlash flag if slash characters should be encoded.
+     * @param charset     for the template.
+     * @return a new Uri Template instance.
+     */
+    public static UriTemplate create(String template, boolean encodeSlash, Charset charset) {
+        return new UriTemplate(template, encodeSlash, charset);
+    }
 
-  /**
-   * Append a uri fragment to the template.
-   *
-   * @param uriTemplate to append to.
-   * @param fragment to append.
-   * @return a new UriTemplate with the fragment appended.
-   */
-  public static UriTemplate append(UriTemplate uriTemplate, String fragment) {
-    return new UriTemplate(uriTemplate.toString() + fragment, uriTemplate.encodeSlash(),
-        uriTemplate.getCharset());
-  }
+    /**
+     * Append a uri fragment to the template.
+     *
+     * @param uriTemplate to append to.
+     * @param fragment    to append.
+     * @return a new UriTemplate with the fragment appended.
+     */
+    public static UriTemplate append(UriTemplate uriTemplate, String fragment) {
+        return new UriTemplate(uriTemplate.toString() + fragment, uriTemplate.encodeSlash(),
+            uriTemplate.getCharset());
+    }
 
-  /**
-   * Create a new Uri Template.
-   *
-   * @param template for the uri.
-   * @param encodeSlash flag for encoding slash characters.
-   * @param charset to use when encoding.
-   */
-  private UriTemplate(String template, boolean encodeSlash, Charset charset) {
-    super(template, ExpansionOptions.REQUIRED, EncodingOptions.REQUIRED, encodeSlash, charset);
-  }
+    /**
+     * Create a new Uri Template.
+     *
+     * @param template    for the uri.
+     * @param encodeSlash flag for encoding slash characters.
+     * @param charset     to use when encoding.
+     */
+    private UriTemplate(String template, boolean encodeSlash, Charset charset) {
+        super(template, ExpansionOptions.REQUIRED, EncodingOptions.REQUIRED, encodeSlash, charset);
+    }
 }

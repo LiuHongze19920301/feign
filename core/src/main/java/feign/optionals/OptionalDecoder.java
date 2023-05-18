@@ -16,6 +16,7 @@ package feign.optionals;
 import feign.Response;
 import feign.Util;
 import feign.codec.Decoder;
+
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -23,30 +24,36 @@ import java.util.Objects;
 import java.util.Optional;
 
 public final class OptionalDecoder implements Decoder {
-  final Decoder delegate;
 
-  public OptionalDecoder(Decoder delegate) {
-    Objects.requireNonNull(delegate, "Decoder must not be null. ");
-    this.delegate = delegate;
-  }
+    final Decoder delegate;
 
-  @Override
-  public Object decode(Response response, Type type) throws IOException {
-    if (!isOptional(type)) {
-      return delegate.decode(response, type);
+    public OptionalDecoder(Decoder delegate) {
+        Objects.requireNonNull(delegate, "Decoder must not be null. ");
+        this.delegate = delegate;
     }
-    if (response.status() == 404 || response.status() == 204) {
-      return Optional.empty();
-    }
-    Type enclosedType = Util.resolveLastTypeParameter(type, Optional.class);
-    return Optional.ofNullable(delegate.decode(response, enclosedType));
-  }
 
-  static boolean isOptional(Type type) {
-    if (!(type instanceof ParameterizedType)) {
-      return false;
+    @Override
+    public Object decode(Response response, Type type) throws IOException {
+        if (!isOptional(type)) {
+            return delegate.decode(response, type);
+        }
+        if (response.status() == 404 || response.status() == 204) {
+            return Optional.empty();
+        }
+        Type enclosedType = Util.resolveLastTypeParameter(type, Optional.class);
+        return Optional.ofNullable(delegate.decode(response, enclosedType));
     }
-    ParameterizedType parameterizedType = (ParameterizedType) type;
-    return parameterizedType.getRawType().equals(Optional.class);
-  }
+
+    /**
+     * 判断是否是Optional类型
+     */
+    static boolean isOptional(Type type) {
+        // Optional类型的返回肯定是ParameterizedType参数化类型的
+        if (!(type instanceof ParameterizedType)) {
+            return false;
+        }
+        ParameterizedType parameterizedType = (ParameterizedType) type;
+        // 参数化类型判断原始类型是否是Optional类型
+        return parameterizedType.getRawType().equals(Optional.class);
+    }
 }
