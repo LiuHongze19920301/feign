@@ -17,44 +17,43 @@ package feign.metrics4;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import com.codahale.metrics.MetricRegistry;
 import feign.MethodMetadata;
 import feign.Target;
 
 public final class FeignMetricName {
 
-    private final Class<?> meteredComponent;
+  private final Class<?> meteredComponent;
 
 
-    public FeignMetricName(Class<?> meteredComponent) {
-        this.meteredComponent = meteredComponent;
+  public FeignMetricName(Class<?> meteredComponent) {
+    this.meteredComponent = meteredComponent;
+  }
+
+
+  public String metricName(MethodMetadata methodMetadata, Target<?> target, String suffix) {
+    return MetricRegistry.name(metricName(methodMetadata, target), suffix);
+  }
+
+  public String metricName(MethodMetadata methodMetadata, Target<?> target) {
+    return metricName(methodMetadata.targetType(), methodMetadata.method(), target.url());
+  }
+
+  public String metricName(Class<?> targetType, Method method, String url) {
+    return MetricRegistry.name(meteredComponent, targetType.getName(), method.getName(),
+        extractHost(url));
+  }
+
+  private String extractHost(final String targetUrl) {
+    try {
+      return new URI(targetUrl).getHost();
+    } catch (final URISyntaxException e) {
+      // can't get the host, in that case, just read first 20 chars from url
+      return targetUrl.length() <= 20
+          ? targetUrl
+          : targetUrl.substring(0, 20);
     }
-
-
-    public String metricName(MethodMetadata methodMetadata, Target<?> target, String suffix) {
-        return MetricRegistry.name(metricName(methodMetadata, target), suffix);
-    }
-
-    public String metricName(MethodMetadata methodMetadata, Target<?> target) {
-        return metricName(methodMetadata.targetType(), methodMetadata.method(), target.url());
-    }
-
-    public String metricName(Class<?> targetType, Method method, String url) {
-        return MetricRegistry.name(meteredComponent, targetType.getName(), method.getName(),
-                extractHost(url));
-    }
-
-    private String extractHost(final String targetUrl) {
-        try {
-            return new URI(targetUrl).getHost();
-        } catch (final URISyntaxException e) {
-            // can't get the host, in that case, just read first 20 chars from url
-            return targetUrl.length() <= 20
-                    ? targetUrl
-                    : targetUrl.substring(0, 20);
-        }
-    }
+  }
 
 
 }

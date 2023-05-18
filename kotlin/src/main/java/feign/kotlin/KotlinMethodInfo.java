@@ -16,7 +16,6 @@ package feign.kotlin;
 import feign.Feign;
 import feign.MethodInfo;
 import feign.Types;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -24,34 +23,34 @@ import java.util.concurrent.CompletableFuture;
 
 class KotlinMethodInfo extends MethodInfo {
 
-    KotlinMethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
-        super(underlyingReturnType, asyncReturnType);
+  KotlinMethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
+    super(underlyingReturnType, asyncReturnType);
+  }
+
+  static KotlinMethodInfo createInstance(Class<?> targetType, Method method) {
+    final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
+
+    Type underlyingReturnType;
+    boolean asyncReturnType;
+    if (MethodKt.isSuspend(method)) {
+      asyncReturnType = true;
+      underlyingReturnType = MethodKt.getKotlinMethodReturnType(method);
+      if (underlyingReturnType == null) {
+        String configKey = Feign.configKey(targetType, method);
+        throw new IllegalArgumentException(
+            String.format(
+                "Method %s can't have continuation argument, only kotlin method is allowed",
+                configKey));
+      }
+    } else if (type instanceof ParameterizedType
+        && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
+      asyncReturnType = true;
+      underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
+    } else {
+      asyncReturnType = false;
+      underlyingReturnType = type;
     }
 
-    static KotlinMethodInfo createInstance(Class<?> targetType, Method method) {
-        final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
-
-        Type underlyingReturnType;
-        boolean asyncReturnType;
-        if (MethodKt.isSuspend(method)) {
-            asyncReturnType = true;
-            underlyingReturnType = MethodKt.getKotlinMethodReturnType(method);
-            if (underlyingReturnType == null) {
-                String configKey = Feign.configKey(targetType, method);
-                throw new IllegalArgumentException(
-                        String.format(
-                                "Method %s can't have continuation argument, only kotlin method is allowed",
-                                configKey));
-            }
-        } else if (type instanceof ParameterizedType
-                && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
-            asyncReturnType = true;
-            underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
-        } else {
-            asyncReturnType = false;
-            underlyingReturnType = type;
-        }
-
-        return new KotlinMethodInfo(underlyingReturnType, asyncReturnType);
-    }
+    return new KotlinMethodInfo(underlyingReturnType, asyncReturnType);
+  }
 }

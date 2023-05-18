@@ -20,32 +20,32 @@ import java.util.concurrent.CompletableFuture;
 
 @Experimental
 public class MethodInfo {
-    private final Type underlyingReturnType;
-    private final boolean asyncReturnType;
+  private final Type underlyingReturnType;
+  private final boolean asyncReturnType;
 
-    protected MethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
-        this.underlyingReturnType = underlyingReturnType;
-        this.asyncReturnType = asyncReturnType;
+  protected MethodInfo(Type underlyingReturnType, boolean asyncReturnType) {
+    this.underlyingReturnType = underlyingReturnType;
+    this.asyncReturnType = asyncReturnType;
+  }
+
+  MethodInfo(Class<?> targetType, Method method) {
+    final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
+
+    if (type instanceof ParameterizedType
+        && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
+      this.asyncReturnType = true;
+      this.underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
+    } else {
+      this.asyncReturnType = false;
+      this.underlyingReturnType = type;
     }
+  }
 
-    MethodInfo(Class<?> targetType, Method method) {
-        final Type type = Types.resolve(targetType, targetType, method.getGenericReturnType());
+  Type underlyingReturnType() {
+    return underlyingReturnType;
+  }
 
-        if (type instanceof ParameterizedType
-                && Types.getRawType(type).isAssignableFrom(CompletableFuture.class)) {
-            this.asyncReturnType = true;
-            this.underlyingReturnType = ((ParameterizedType) type).getActualTypeArguments()[0];
-        } else {
-            this.asyncReturnType = false;
-            this.underlyingReturnType = type;
-        }
-    }
-
-    Type underlyingReturnType() {
-        return underlyingReturnType;
-    }
-
-    boolean isAsyncReturnType() {
-        return asyncReturnType;
-    }
+  boolean isAsyncReturnType() {
+    return asyncReturnType;
+  }
 }

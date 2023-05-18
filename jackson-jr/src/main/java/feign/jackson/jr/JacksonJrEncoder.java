@@ -15,13 +15,11 @@ package feign.jackson.jr;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.JacksonJrExtension;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
-
 import static java.lang.String.format;
 
 /**
@@ -29,39 +27,39 @@ import static java.lang.String.format;
  */
 public class JacksonJrEncoder extends JacksonJrMapper implements Encoder {
 
-    public JacksonJrEncoder() {
-        super();
-    }
+  public JacksonJrEncoder() {
+    super();
+  }
 
-    /**
-     * Construct with a custom {@link JSON} to use for encoding
-     *
-     * @param mapper the mapper to use
-     */
-    public JacksonJrEncoder(JSON mapper) {
-        super(mapper);
-    }
+  /**
+   * Construct with a custom {@link JSON} to use for encoding
+   *
+   * @param mapper the mapper to use
+   */
+  public JacksonJrEncoder(JSON mapper) {
+    super(mapper);
+  }
 
-    /**
-     * Construct with a series of {@link JacksonJrExtension} objects that are registered into the
-     * {@link JSON}
-     *
-     * @param iterable the source of the extensions
-     */
-    public JacksonJrEncoder(Iterable<JacksonJrExtension> iterable) {
-        super(iterable);
-    }
+  /**
+   * Construct with a series of {@link JacksonJrExtension} objects that are registered into the
+   * {@link JSON}
+   *
+   * @param iterable the source of the extensions
+   */
+  public JacksonJrEncoder(Iterable<JacksonJrExtension> iterable) {
+    super(iterable);
+  }
 
-    @Override
-    public void encode(Object object, Type bodyType, RequestTemplate template) {
-        try {
-            if (bodyType == byte[].class) {
-                template.body(mapper.asBytes(object), null);
-            } else {
-                template.body(mapper.asString(object));
-            }
-        } catch (IOException e) {
-            throw new EncodeException(e.getMessage(), e);
-        }
+  @Override
+  public void encode(Object object, Type bodyType, RequestTemplate template) {
+    try {
+      if (bodyType == byte[].class) {
+        template.body(mapper.asBytes(object), null);
+      } else {
+        template.body(mapper.asString(object));
+      }
+    } catch (IOException e) {
+      throw new EncodeException(e.getMessage(), e);
     }
+  }
 }

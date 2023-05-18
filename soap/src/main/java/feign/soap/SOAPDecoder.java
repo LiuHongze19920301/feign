@@ -24,7 +24,6 @@ import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.soap.SOAPFaultException;
-
 import feign.Response;
 import feign.Util;
 import feign.codec.DecodeException;
@@ -85,107 +84,107 @@ import feign.jaxb.JAXBContextFactory;
 public class SOAPDecoder implements Decoder {
 
 
-    private final JAXBContextFactory jaxbContextFactory;
-    private final String soapProtocol;
-    private final boolean useFirstChild;
+  private final JAXBContextFactory jaxbContextFactory;
+  private final String soapProtocol;
+  private final boolean useFirstChild;
 
-    public SOAPDecoder(JAXBContextFactory jaxbContextFactory) {
-        this.jaxbContextFactory = jaxbContextFactory;
-        this.soapProtocol = SOAPConstants.DEFAULT_SOAP_PROTOCOL;
-        this.useFirstChild = false;
+  public SOAPDecoder(JAXBContextFactory jaxbContextFactory) {
+    this.jaxbContextFactory = jaxbContextFactory;
+    this.soapProtocol = SOAPConstants.DEFAULT_SOAP_PROTOCOL;
+    this.useFirstChild = false;
+  }
+
+  private SOAPDecoder(Builder builder) {
+    this.soapProtocol = builder.soapProtocol;
+    this.jaxbContextFactory = builder.jaxbContextFactory;
+    this.useFirstChild = builder.useFirstChild;
+  }
+
+  @Override
+  public Object decode(Response response, Type type) throws IOException {
+    if (response.status() == 404)
+      return Util.emptyValueOf(type);
+    if (response.body() == null)
+      return null;
+    while (type instanceof ParameterizedType) {
+      ParameterizedType ptype = (ParameterizedType) type;
+      type = ptype.getRawType();
+    }
+    if (!(type instanceof Class)) {
+      throw new UnsupportedOperationException(
+          "SOAP only supports decoding raw types. Found " + type);
     }
 
-    private SOAPDecoder(Builder builder) {
-        this.soapProtocol = builder.soapProtocol;
-        this.jaxbContextFactory = builder.jaxbContextFactory;
-        this.useFirstChild = builder.useFirstChild;
+    try {
+      SOAPMessage message =
+          MessageFactory.newInstance(soapProtocol).createMessage(null,
+              response.body().asInputStream());
+      if (message.getSOAPBody() != null) {
+        if (message.getSOAPBody().hasFault()) {
+          throw new SOAPFaultException(message.getSOAPBody().getFault());
+        }
+
+        Unmarshaller unmarshaller = jaxbContextFactory.createUnmarshaller((Class<?>) type);
+
+        if (this.useFirstChild) {
+          return unmarshaller.unmarshal(message.getSOAPBody().getFirstChild());
+        } else {
+          return unmarshaller.unmarshal(message.getSOAPBody().extractContentAsDocument());
+        }
+      }
+    } catch (SOAPException | JAXBException e) {
+      throw new DecodeException(response.status(), e.toString(), response.request(), e);
+    } finally {
+      if (response.body() != null) {
+        response.body().close();
+      }
+    }
+    return Util.emptyValueOf(type);
+
+  }
+
+
+  public static class Builder {
+    String soapProtocol = SOAPConstants.DEFAULT_SOAP_PROTOCOL;
+    JAXBContextFactory jaxbContextFactory;
+    boolean useFirstChild = false;
+
+    public Builder withJAXBContextFactory(JAXBContextFactory jaxbContextFactory) {
+      this.jaxbContextFactory = jaxbContextFactory;
+      return this;
     }
 
-    @Override
-    public Object decode(Response response, Type type) throws IOException {
-        if (response.status() == 404)
-            return Util.emptyValueOf(type);
-        if (response.body() == null)
-            return null;
-        while (type instanceof ParameterizedType) {
-            ParameterizedType ptype = (ParameterizedType) type;
-            type = ptype.getRawType();
-        }
-        if (!(type instanceof Class)) {
-            throw new UnsupportedOperationException(
-                    "SOAP only supports decoding raw types. Found " + type);
-        }
-
-        try {
-            SOAPMessage message =
-                    MessageFactory.newInstance(soapProtocol).createMessage(null,
-                            response.body().asInputStream());
-            if (message.getSOAPBody() != null) {
-                if (message.getSOAPBody().hasFault()) {
-                    throw new SOAPFaultException(message.getSOAPBody().getFault());
-                }
-
-                Unmarshaller unmarshaller = jaxbContextFactory.createUnmarshaller((Class<?>) type);
-
-                if (this.useFirstChild) {
-                    return unmarshaller.unmarshal(message.getSOAPBody().getFirstChild());
-                } else {
-                    return unmarshaller.unmarshal(message.getSOAPBody().extractContentAsDocument());
-                }
-            }
-        } catch (SOAPException | JAXBException e) {
-            throw new DecodeException(response.status(), e.toString(), response.request(), e);
-        } finally {
-            if (response.body() != null) {
-                response.body().close();
-            }
-        }
-        return Util.emptyValueOf(type);
-
+    /**
+     * The protocol used to create message factory. Default is "SOAP 1.1 Protocol".
+     *
+     * @param soapProtocol a string constant representing the MessageFactory protocol.
+     * @see SOAPConstants#SOAP_1_1_PROTOCOL
+     * @see SOAPConstants#SOAP_1_2_PROTOCOL
+     * @see SOAPConstants#DYNAMIC_SOAP_PROTOCOL
+     * @see MessageFactory#newInstance(String)
+     */
+    public Builder withSOAPProtocol(String soapProtocol) {
+      this.soapProtocol = soapProtocol;
+      return this;
     }
 
-
-    public static class Builder {
-        String soapProtocol = SOAPConstants.DEFAULT_SOAP_PROTOCOL;
-        JAXBContextFactory jaxbContextFactory;
-        boolean useFirstChild = false;
-
-        public Builder withJAXBContextFactory(JAXBContextFactory jaxbContextFactory) {
-            this.jaxbContextFactory = jaxbContextFactory;
-            return this;
-        }
-
-        /**
-         * The protocol used to create message factory. Default is "SOAP 1.1 Protocol".
-         *
-         * @param soapProtocol a string constant representing the MessageFactory protocol.
-         * @see SOAPConstants#SOAP_1_1_PROTOCOL
-         * @see SOAPConstants#SOAP_1_2_PROTOCOL
-         * @see SOAPConstants#DYNAMIC_SOAP_PROTOCOL
-         * @see MessageFactory#newInstance(String)
-         */
-        public Builder withSOAPProtocol(String soapProtocol) {
-            this.soapProtocol = soapProtocol;
-            return this;
-        }
-
-        /**
-         * Alters the behavior of the code to use the {@link SOAPBody#getFirstChild()} in place of
-         * {@link SOAPBody#extractContentAsDocument()}.
-         *
-         * @return the builder instance.
-         */
-        public Builder useFirstChild() {
-            this.useFirstChild = true;
-            return this;
-        }
-
-        public SOAPDecoder build() {
-            if (jaxbContextFactory == null) {
-                throw new IllegalStateException("JAXBContextFactory must be non-null");
-            }
-            return new SOAPDecoder(this);
-        }
+    /**
+     * Alters the behavior of the code to use the {@link SOAPBody#getFirstChild()} in place of
+     * {@link SOAPBody#extractContentAsDocument()}.
+     *
+     * @return the builder instance.
+     */
+    public Builder useFirstChild() {
+      this.useFirstChild = true;
+      return this;
     }
+
+    public SOAPDecoder build() {
+      if (jaxbContextFactory == null) {
+        throw new IllegalStateException("JAXBContextFactory must be non-null");
+      }
+      return new SOAPDecoder(this);
+    }
+  }
 
 }

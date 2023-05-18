@@ -16,7 +16,6 @@ package feign.metrics5;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-
 import feign.FeignException;
 import feign.RequestTemplate;
 import feign.Response;
@@ -31,64 +30,64 @@ import io.dropwizard.metrics5.Timer.Context;
  */
 public class MeteredDecoder implements Decoder {
 
-    private final Decoder decoder;
-    private final MetricRegistry metricRegistry;
-    private final MetricSuppliers metricSuppliers;
-    private final FeignMetricName metricName;
+  private final Decoder decoder;
+  private final MetricRegistry metricRegistry;
+  private final MetricSuppliers metricSuppliers;
+  private final FeignMetricName metricName;
 
-    public MeteredDecoder(Decoder decoder, MetricRegistry metricRegistry,
-                          MetricSuppliers metricSuppliers) {
-        this.decoder = decoder;
-        this.metricRegistry = metricRegistry;
-        this.metricSuppliers = metricSuppliers;
-        this.metricName = new FeignMetricName(Decoder.class);
+  public MeteredDecoder(Decoder decoder, MetricRegistry metricRegistry,
+      MetricSuppliers metricSuppliers) {
+    this.decoder = decoder;
+    this.metricRegistry = metricRegistry;
+    this.metricSuppliers = metricSuppliers;
+    this.metricName = new FeignMetricName(Decoder.class);
+  }
+
+  @Override
+  public Object decode(Response response, Type type)
+      throws IOException, DecodeException, FeignException {
+    final RequestTemplate template = response.request().requestTemplate();
+    final MeteredBody body = response.body() == null
+        ? null
+        : new MeteredBody(response.body());
+
+    response = response.toBuilder().body(body).build();
+
+    final Object decoded;
+    try (final Context classTimer =
+        metricRegistry
+            .timer(metricName.metricName(template.methodMetadata(), template.feignTarget())
+                .tagged("uri", template.methodMetadata().template().path()),
+                metricSuppliers.timers())
+            .time()) {
+      decoded = decoder.decode(response, type);
+    } catch (IOException | RuntimeException e) {
+      metricRegistry.meter(
+          metricName.metricName(template.methodMetadata(), template.feignTarget(), "error_count")
+              .tagged("exception_name", e.getClass().getSimpleName())
+              .tagged("root_cause_name", ExceptionUtils.getRootCause(e).getClass().getSimpleName())
+              .tagged("uri", template.methodMetadata().template().path()),
+          metricSuppliers.meters()).mark();
+      throw e;
+    } catch (Exception e) {
+      metricRegistry.meter(
+          metricName.metricName(template.methodMetadata(), template.feignTarget(), "error_count")
+              .tagged("exception_name", e.getClass().getSimpleName())
+              .tagged("root_cause_name", ExceptionUtils.getRootCause(e).getClass().getSimpleName())
+              .tagged("uri", template.methodMetadata().template().path()),
+          metricSuppliers.meters()).mark();
+      throw new IOException(e);
     }
 
-    @Override
-    public Object decode(Response response, Type type)
-            throws IOException, DecodeException, FeignException {
-        final RequestTemplate template = response.request().requestTemplate();
-        final MeteredBody body = response.body() == null
-                ? null
-                : new MeteredBody(response.body());
-
-        response = response.toBuilder().body(body).build();
-
-        final Object decoded;
-        try (final Context classTimer =
-                     metricRegistry
-                             .timer(metricName.metricName(template.methodMetadata(), template.feignTarget())
-                                             .tagged("uri", template.methodMetadata().template().path()),
-                                     metricSuppliers.timers())
-                             .time()) {
-            decoded = decoder.decode(response, type);
-        } catch (IOException | RuntimeException e) {
-            metricRegistry.meter(
-                    metricName.metricName(template.methodMetadata(), template.feignTarget(), "error_count")
-                            .tagged("exception_name", e.getClass().getSimpleName())
-                            .tagged("root_cause_name", ExceptionUtils.getRootCause(e).getClass().getSimpleName())
-                            .tagged("uri", template.methodMetadata().template().path()),
-                    metricSuppliers.meters()).mark();
-            throw e;
-        } catch (Exception e) {
-            metricRegistry.meter(
-                    metricName.metricName(template.methodMetadata(), template.feignTarget(), "error_count")
-                            .tagged("exception_name", e.getClass().getSimpleName())
-                            .tagged("root_cause_name", ExceptionUtils.getRootCause(e).getClass().getSimpleName())
-                            .tagged("uri", template.methodMetadata().template().path()),
-                    metricSuppliers.meters()).mark();
-            throw new IOException(e);
-        }
-
-        if (body != null) {
-            metricRegistry.histogram(
-                    metricName.metricName(template.methodMetadata(), template.feignTarget(),
-                                    "response_size")
-                            .tagged("uri", template.methodMetadata().template().path()),
-                    metricSuppliers.histograms()).update(body.count());
-        }
-
-        return decoded;
+    if (body != null) {
+      metricRegistry.histogram(
+          metricName.metricName(template.methodMetadata(), template.feignTarget(),
+              "response_size")
+              .tagged("uri", template.methodMetadata().template().path()),
+          metricSuppliers.histograms()).update(body.count());
     }
+
+    return decoded;
+  }
 
 }

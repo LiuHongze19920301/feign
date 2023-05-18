@@ -16,7 +16,6 @@ package feign.metrics5;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasEntry;
-
 import feign.Capability;
 import feign.Util;
 import feign.micrometer.AbstractMetricsTestBase;
@@ -24,105 +23,103 @@ import io.dropwizard.metrics5.Metered;
 import io.dropwizard.metrics5.Metric;
 import io.dropwizard.metrics5.MetricName;
 import io.dropwizard.metrics5.MetricRegistry;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.hamcrest.Matcher;
 
 public class Metrics5CapabilityTest
-        extends AbstractMetricsTestBase<MetricRegistry, MetricName, Metric> {
+    extends AbstractMetricsTestBase<MetricRegistry, MetricName, Metric> {
 
-    @Override
-    protected MetricRegistry createMetricsRegistry() {
-        return new MetricRegistry();
-    }
+  @Override
+  protected MetricRegistry createMetricsRegistry() {
+    return new MetricRegistry();
+  }
 
-    @Override
-    protected Capability createMetricCapability() {
-        return new Metrics5Capability(metricsRegistry);
-    }
+  @Override
+  protected Capability createMetricCapability() {
+    return new Metrics5Capability(metricsRegistry);
+  }
 
-    @Override
-    protected Map<MetricName, Metric> getFeignMetrics() {
-        return metricsRegistry.getMetrics();
-    }
+  @Override
+  protected Map<MetricName, Metric> getFeignMetrics() {
+    return metricsRegistry.getMetrics();
+  }
 
-    @Override
-    protected boolean doesMetricIdIncludeClient(MetricName metricId) {
-        String tag = metricId.getTags().get("client");
-        Matcher<String> containsBase = containsString("feign.micrometer.AbstractMetricsTestBase$");
-        Matcher<String> containsSource = containsString("Source");
-        return allOf(containsBase, containsSource).matches(tag);
-    }
+  @Override
+  protected boolean doesMetricIdIncludeClient(MetricName metricId) {
+    String tag = metricId.getTags().get("client");
+    Matcher<String> containsBase = containsString("feign.micrometer.AbstractMetricsTestBase$");
+    Matcher<String> containsSource = containsString("Source");
+    return allOf(containsBase, containsSource).matches(tag);
+  }
 
-    @Override
-    protected boolean doesMetricIncludeVerb(MetricName metricId, String verb) {
-        return hasEntry("method", verb).matches(metricId.getTags());
-    }
+  @Override
+  protected boolean doesMetricIncludeVerb(MetricName metricId, String verb) {
+    return hasEntry("method", verb).matches(metricId.getTags());
+  }
 
-    @Override
-    protected boolean doesMetricIncludeHost(MetricName metricId) {
-        // hostname is null due to feign-mock shortfalls
-        return hasEntry("host", null).matches(metricId.getTags());
-    }
+  @Override
+  protected boolean doesMetricIncludeHost(MetricName metricId) {
+    // hostname is null due to feign-mock shortfalls
+    return hasEntry("host", null).matches(metricId.getTags());
+  }
 
-    @Override
-    protected Metric getMetric(String suffix, String... tags) {
-        Util.checkArgument(
-                tags.length % 2 == 0, "tags must contain key-value pairs %s", Arrays.toString(tags));
+  @Override
+  protected Metric getMetric(String suffix, String... tags) {
+    Util.checkArgument(
+        tags.length % 2 == 0, "tags must contain key-value pairs %s", Arrays.toString(tags));
 
-        return getFeignMetrics().entrySet().stream()
-                .filter(
-                        entry -> {
-                            MetricName name = entry.getKey();
-                            if (!name.getKey().endsWith(suffix)) {
-                                return false;
-                            }
+    return getFeignMetrics().entrySet().stream()
+        .filter(
+            entry -> {
+              MetricName name = entry.getKey();
+              if (!name.getKey().endsWith(suffix)) {
+                return false;
+              }
 
-                            for (int i = 0; i < tags.length; i += 2) {
-                                if (name.getTags().containsKey(tags[i])) {
-                                    if (!name.getTags().get(tags[i]).equals(tags[i + 1])) {
-                                        return false;
-                                    }
-                                }
-                            }
+              for (int i = 0; i < tags.length; i += 2) {
+                if (name.getTags().containsKey(tags[i])) {
+                  if (!name.getTags().get(tags[i]).equals(tags[i + 1])) {
+                    return false;
+                  }
+                }
+              }
 
-                            return true;
-                        })
-                .findAny()
-                .map(Entry::getValue)
-                .orElse(null);
-    }
+              return true;
+            })
+        .findAny()
+        .map(Entry::getValue)
+        .orElse(null);
+  }
 
-    @Override
-    protected boolean isClientMetric(MetricName metricId) {
-        return metricId.getKey().startsWith("feign.Client");
-    }
+  @Override
+  protected boolean isClientMetric(MetricName metricId) {
+    return metricId.getKey().startsWith("feign.Client");
+  }
 
-    @Override
-    protected boolean isAsyncClientMetric(MetricName metricId) {
-        return metricId.getKey().startsWith("feign.AsyncClient");
-    }
+  @Override
+  protected boolean isAsyncClientMetric(MetricName metricId) {
+    return metricId.getKey().startsWith("feign.AsyncClient");
+  }
 
-    @Override
-    protected boolean isDecoderMetric(MetricName metricId) {
-        return metricId.getKey().startsWith("feign.codec.Decoder");
-    }
+  @Override
+  protected boolean isDecoderMetric(MetricName metricId) {
+    return metricId.getKey().startsWith("feign.codec.Decoder");
+  }
 
-    @Override
-    protected boolean doesMetricIncludeUri(MetricName metricId, String uri) {
-        return uri.equals(metricId.getTags().get("uri"));
-    }
+  @Override
+  protected boolean doesMetricIncludeUri(MetricName metricId, String uri) {
+    return uri.equals(metricId.getTags().get("uri"));
+  }
 
-    @Override
-    protected boolean doesMetricHasCounter(Metric metric) {
-        return metric instanceof Metered;
-    }
+  @Override
+  protected boolean doesMetricHasCounter(Metric metric) {
+    return metric instanceof Metered;
+  }
 
-    @Override
-    protected long getMetricCounter(Metric metric) {
-        return ((Metered) metric).getCount();
-    }
+  @Override
+  protected long getMetricCounter(Metric metric) {
+    return ((Metered) metric).getCount();
+  }
 }

@@ -26,9 +26,9 @@ import io.micrometer.observation.transport.SenderContext;
  */
 public class FeignContext extends RequestReplySenderContext<Request, Response> {
 
-    public FeignContext(Request request) {
-        super(Request::header);
-        setCarrier(request);
-    }
+  public FeignContext(Request request) {
+    super(Request::header);
+    setCarrier(request);
+  }
 
 }

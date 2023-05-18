@@ -18,11 +18,9 @@ import feign.QueryMapEncoder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -31,139 +29,139 @@ import static org.junit.Assert.assertTrue;
  */
 public class BeanQueryMapEncoderTest {
 
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    private final QueryMapEncoder encoder = new BeanQueryMapEncoder();
+  private final QueryMapEncoder encoder = new BeanQueryMapEncoder();
 
-    @Test
-    public void testDefaultEncoder_normalClassWithValues() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("foo", "fooz");
-        expected.put("bar", "barz");
-        expected.put("fooAppendBar", "foozbarz");
-        NormalObject normalObject = new NormalObject("fooz", "barz");
+  @Test
+  public void testDefaultEncoder_normalClassWithValues() {
+    Map<String, Object> expected = new HashMap<>();
+    expected.put("foo", "fooz");
+    expected.put("bar", "barz");
+    expected.put("fooAppendBar", "foozbarz");
+    NormalObject normalObject = new NormalObject("fooz", "barz");
 
-        Map<String, Object> encodedMap = encoder.encode(normalObject);
+    Map<String, Object> encodedMap = encoder.encode(normalObject);
 
-        assertEquals("Unexpected encoded query map", expected, encodedMap);
+    assertEquals("Unexpected encoded query map", expected, encodedMap);
+  }
+
+  @Test
+  public void testDefaultEncoder_normalClassWithOutValues() {
+    NormalObject normalObject = new NormalObject(null, null);
+
+    Map<String, Object> encodedMap = encoder.encode(normalObject);
+
+    assertTrue("Non-empty map generated from null getter: " + encodedMap, encodedMap.isEmpty());
+  }
+
+  @Test
+  public void testDefaultEncoder_haveSuperClass() {
+    Map<String, Object> expected = new HashMap<>();
+    expected.put("page", 1);
+    expected.put("size", 10);
+    expected.put("query", "queryString");
+    SubClass subClass = new SubClass();
+    subClass.setPage(1);
+    subClass.setSize(10);
+    subClass.setQuery("queryString");
+
+    Map<String, Object> encodedMap = encoder.encode(subClass);
+
+    assertEquals("Unexpected encoded query map", expected, encodedMap);
+  }
+
+  @Test
+  public void testDefaultEncoder_withOverriddenParamName() {
+    HashSet<Object> expectedNames = new HashSet<>();
+    expectedNames.add("fooAlias");
+    expectedNames.add("bar");
+    final NormalObjectWithOverriddenParamName normalObject =
+        new NormalObjectWithOverriddenParamName("fooz", "barz");
+
+    final Map<String, Object> encodedMap = encoder.encode(normalObject);
+
+    assertEquals("@Param ignored", expectedNames, encodedMap.keySet());
+  }
+
+  class NormalObjectWithOverriddenParamName {
+
+    private NormalObjectWithOverriddenParamName(String foo, String bar) {
+      this.foo = foo;
+      this.bar = bar;
     }
 
-    @Test
-    public void testDefaultEncoder_normalClassWithOutValues() {
-        NormalObject normalObject = new NormalObject(null, null);
+    private String foo;
+    private String bar;
 
-        Map<String, Object> encodedMap = encoder.encode(normalObject);
-
-        assertTrue("Non-empty map generated from null getter: " + encodedMap, encodedMap.isEmpty());
+    @Param("fooAlias")
+    public String getFoo() {
+      return foo;
     }
 
-    @Test
-    public void testDefaultEncoder_haveSuperClass() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("page", 1);
-        expected.put("size", 10);
-        expected.put("query", "queryString");
-        SubClass subClass = new SubClass();
-        subClass.setPage(1);
-        subClass.setSize(10);
-        subClass.setQuery("queryString");
+    public String getBar() {
+      return bar;
+    }
+  }
 
-        Map<String, Object> encodedMap = encoder.encode(subClass);
+  class NormalObject {
 
-        assertEquals("Unexpected encoded query map", expected, encodedMap);
+    private NormalObject(String foo, String bar) {
+      this.foo = foo;
+      this.bar = bar;
     }
 
-    @Test
-    public void testDefaultEncoder_withOverriddenParamName() {
-        HashSet<Object> expectedNames = new HashSet<>();
-        expectedNames.add("fooAlias");
-        expectedNames.add("bar");
-        final NormalObjectWithOverriddenParamName normalObject =
-                new NormalObjectWithOverriddenParamName("fooz", "barz");
+    private String foo;
+    private String bar;
 
-        final Map<String, Object> encodedMap = encoder.encode(normalObject);
-
-        assertEquals("@Param ignored", expectedNames, encodedMap.keySet());
+    public String getFoo() {
+      return foo;
     }
 
-    class NormalObjectWithOverriddenParamName {
-
-        private NormalObjectWithOverriddenParamName(String foo, String bar) {
-            this.foo = foo;
-            this.bar = bar;
-        }
-
-        private String foo;
-        private String bar;
-
-        @Param("fooAlias")
-        public String getFoo() {
-            return foo;
-        }
-
-        public String getBar() {
-            return bar;
-        }
+    public String getBar() {
+      return bar;
     }
 
-    class NormalObject {
+    public String getFooAppendBar() {
+      if (foo != null && bar != null) {
+        return foo + bar;
+      }
+      return null;
+    }
+  }
 
-        private NormalObject(String foo, String bar) {
-            this.foo = foo;
-            this.bar = bar;
-        }
+  class SuperClass {
+    private int page;
+    private int size;
 
-        private String foo;
-        private String bar;
-
-        public String getFoo() {
-            return foo;
-        }
-
-        public String getBar() {
-            return bar;
-        }
-
-        public String getFooAppendBar() {
-            if (foo != null && bar != null) {
-                return foo + bar;
-            }
-            return null;
-        }
+    public int getPage() {
+      return page;
     }
 
-    class SuperClass {
-        private int page;
-        private int size;
-
-        public int getPage() {
-            return page;
-        }
-
-        public void setPage(int page) {
-            this.page = page;
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public void setSize(int size) {
-            this.size = size;
-        }
+    public void setPage(int page) {
+      this.page = page;
     }
 
-    class SubClass extends SuperClass {
-
-        private String query;
-
-        public String getQuery() {
-            return query;
-        }
-
-        public void setQuery(String query) {
-            this.query = query;
-        }
+    public int getSize() {
+      return size;
     }
+
+    public void setSize(int size) {
+      this.size = size;
+    }
+  }
+
+  class SubClass extends SuperClass {
+
+    private String query;
+
+    public String getQuery() {
+      return query;
+    }
+
+    public void setQuery(String query) {
+      this.query = query;
+    }
+  }
 }

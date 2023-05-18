@@ -19,6 +19,6 @@ package feign.template;
 @FunctionalInterface
 public interface TemplateChunk {
 
-    String getValue();
+  String getValue();
 
 }

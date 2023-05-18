@@ -21,7 +21,6 @@ import feign.RequestTemplate;
 import feign.Response;
 import io.dropwizard.metrics5.MetricRegistry;
 import io.dropwizard.metrics5.Timer;
-
 import java.io.IOException;
 
 /**
@@ -29,31 +28,31 @@ import java.io.IOException;
  */
 public class MeteredClient extends BaseMeteredClient implements Client {
 
-    private final Client client;
+  private final Client client;
 
-    public MeteredClient(
-            Client client, MetricRegistry metricRegistry, MetricSuppliers metricSuppliers) {
-        super(metricRegistry, new FeignMetricName(Client.class), metricSuppliers);
+  public MeteredClient(
+      Client client, MetricRegistry metricRegistry, MetricSuppliers metricSuppliers) {
+    super(metricRegistry, new FeignMetricName(Client.class), metricSuppliers);
 
-        this.client = client;
+    this.client = client;
+  }
+
+  @Override
+  public Response execute(Request request, Options options) throws IOException {
+    final RequestTemplate template = request.requestTemplate();
+    try (final Timer.Context timer = createTimer(template)) {
+      Response response = client.execute(request, options);
+      recordSuccess(template, response);
+      return response;
+    } catch (FeignException e) {
+      recordFailure(template, e);
+      throw e;
+    } catch (IOException | RuntimeException e) {
+      recordFailure(template, e);
+      throw e;
+    } catch (Exception e) {
+      recordFailure(template, e);
+      throw new IOException(e);
     }
-
-    @Override
-    public Response execute(Request request, Options options) throws IOException {
-        final RequestTemplate template = request.requestTemplate();
-        try (final Timer.Context timer = createTimer(template)) {
-            Response response = client.execute(request, options);
-            recordSuccess(template, response);
-            return response;
-        } catch (FeignException e) {
-            recordFailure(template, e);
-            throw e;
-        } catch (IOException | RuntimeException e) {
-            recordFailure(template, e);
-            throw e;
-        } catch (Exception e) {
-            recordFailure(template, e);
-            throw new IOException(e);
-        }
-    }
+  }
 }

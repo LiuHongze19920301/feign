@@ -17,88 +17,86 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-
 import static org.junit.Assert.*;
 
 @RunWith(Enclosed.class)
 public class MethodInfoTest {
 
-    public static class AsyncClientTest {
-        public interface AsyncClient {
-            CompletableFuture<String> log();
-        }
-
-        @Test
-        public void testCompletableFutureOfString() throws Exception {
-            MethodInfo mi = new MethodInfo(AsyncClient.class, AsyncClient.class.getMethod("log"));
-            assertTrue(mi.isAsyncReturnType());
-            assertEquals(String.class, mi.underlyingReturnType());
-        }
+  public static class AsyncClientTest {
+    public interface AsyncClient {
+      CompletableFuture<String> log();
     }
 
-    public static class GenericAsyncClientTest {
-        public interface GenericAsyncClient<T> {
-            T log();
-        }
+    @Test
+    public void testCompletableFutureOfString() throws Exception {
+      MethodInfo mi = new MethodInfo(AsyncClient.class, AsyncClient.class.getMethod("log"));
+      assertTrue(mi.isAsyncReturnType());
+      assertEquals(String.class, mi.underlyingReturnType());
+    }
+  }
 
-        public interface AsyncClient extends GenericAsyncClient<CompletableFuture<String>> {
-        }
-
-        @Test
-        public void testGenericCompletableFutureOfString() throws Exception {
-            MethodInfo mi = new MethodInfo(AsyncClient.class, AsyncClient.class.getMethod("log"));
-            assertTrue(mi.isAsyncReturnType());
-            assertEquals(String.class, mi.underlyingReturnType());
-        }
+  public static class GenericAsyncClientTest {
+    public interface GenericAsyncClient<T> {
+      T log();
     }
 
-    public static class SyncClientTest {
-        public interface SyncClient {
-            String log();
-        }
-
-        @Test
-        public void testString() throws Exception {
-            MethodInfo mi = new MethodInfo(SyncClient.class, SyncClient.class.getMethod("log"));
-            assertFalse(mi.isAsyncReturnType());
-            assertEquals(String.class, mi.underlyingReturnType());
-        }
+    public interface AsyncClient extends GenericAsyncClient<CompletableFuture<String>> {
     }
 
-    public static class GenericSyncClientTest {
-        public interface GenericSyncClient<T> {
-            T log();
-        }
-
-        public interface SyncClient extends GenericSyncClient<List<String>> {
-        }
-
-        public static class ListOfStrings implements ParameterizedType {
-            @Override
-            public Type[] getActualTypeArguments() {
-                return new Type[]{String.class};
-            }
-
-            @Override
-            public Type getRawType() {
-                return List.class;
-            }
-
-            @Override
-            public Type getOwnerType() {
-                return null;
-            }
-        }
-
-        @Test
-        public void testListOfStrings() throws Exception {
-            MethodInfo mi = new MethodInfo(SyncClient.class, SyncClient.class.getMethod("log"));
-            assertFalse(mi.isAsyncReturnType());
-            assertTrue(Types.equals(new ListOfStrings(), mi.underlyingReturnType()));
-        }
+    @Test
+    public void testGenericCompletableFutureOfString() throws Exception {
+      MethodInfo mi = new MethodInfo(AsyncClient.class, AsyncClient.class.getMethod("log"));
+      assertTrue(mi.isAsyncReturnType());
+      assertEquals(String.class, mi.underlyingReturnType());
     }
+  }
+
+  public static class SyncClientTest {
+    public interface SyncClient {
+      String log();
+    }
+
+    @Test
+    public void testString() throws Exception {
+      MethodInfo mi = new MethodInfo(SyncClient.class, SyncClient.class.getMethod("log"));
+      assertFalse(mi.isAsyncReturnType());
+      assertEquals(String.class, mi.underlyingReturnType());
+    }
+  }
+
+  public static class GenericSyncClientTest {
+    public interface GenericSyncClient<T> {
+      T log();
+    }
+
+    public interface SyncClient extends GenericSyncClient<List<String>> {
+    }
+
+    public static class ListOfStrings implements ParameterizedType {
+      @Override
+      public Type[] getActualTypeArguments() {
+        return new Type[] {String.class};
+      }
+
+      @Override
+      public Type getRawType() {
+        return List.class;
+      }
+
+      @Override
+      public Type getOwnerType() {
+        return null;
+      }
+    }
+
+    @Test
+    public void testListOfStrings() throws Exception {
+      MethodInfo mi = new MethodInfo(SyncClient.class, SyncClient.class.getMethod("log"));
+      assertFalse(mi.isAsyncReturnType());
+      assertTrue(Types.equals(new ListOfStrings(), mi.underlyingReturnType()));
+    }
+  }
 }

@@ -21,46 +21,43 @@ import example.wikipedia.WikipediaClient.Page;
 import example.wikipedia.WikipediaClient.Response;
 import feign.codec.Decoder;
 import feign.gson.GsonDecoder;
-
 import java.io.IOException;
-
 import org.springframework.context.annotation.Bean;
 
 public class WikipediaClientConfiguration {
 
-    static ResponseAdapter<Page> pagesAdapter = new ResponseAdapter<Page>() {
+  static ResponseAdapter<Page> pagesAdapter = new ResponseAdapter<Page>() {
 
-        @Override
-        protected String query() {
-            return "pages";
-        }
-
-        @Override
-        protected Page build(JsonReader reader) throws IOException {
-            Page page = new Page();
-            while (reader.hasNext()) {
-                String key = reader.nextName();
-                if (key.equals("pageid")) {
-                    page.id = reader.nextLong();
-                } else if (key.equals("title")) {
-                    page.title = reader.nextString();
-                } else {
-                    reader.skipValue();
-                }
-            }
-            return page;
-        }
-    };
-
-
-    @Bean
-    public Decoder decoder() {
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(new TypeToken<Response<Page>>() {
-                }.getType(), pagesAdapter)
-                .create();
-
-        return new GsonDecoder(gson);
+    @Override
+    protected String query() {
+      return "pages";
     }
+
+    @Override
+    protected Page build(JsonReader reader) throws IOException {
+      Page page = new Page();
+      while (reader.hasNext()) {
+        String key = reader.nextName();
+        if (key.equals("pageid")) {
+          page.id = reader.nextLong();
+        } else if (key.equals("title")) {
+          page.title = reader.nextString();
+        } else {
+          reader.skipValue();
+        }
+      }
+      return page;
+    }
+  };
+
+
+  @Bean
+  public Decoder decoder() {
+    Gson gson = new GsonBuilder()
+        .registerTypeAdapter(new TypeToken<Response<Page>>() {}.getType(), pagesAdapter)
+        .create();
+
+    return new GsonDecoder(gson);
+  }
 
 }

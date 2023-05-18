@@ -16,66 +16,64 @@ package feign.reactive;
 import feign.Contract;
 import feign.MethodMetadata;
 import feign.Types;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Stream;
-
 import org.reactivestreams.Publisher;
 
 public class ReactiveDelegatingContract implements Contract {
 
-    private final Contract delegate;
+  private final Contract delegate;
 
-    ReactiveDelegatingContract(Contract delegate) {
-        this.delegate = delegate;
-    }
+  ReactiveDelegatingContract(Contract delegate) {
+    this.delegate = delegate;
+  }
 
-    @Override
-    public List<MethodMetadata> parseAndValidateMetadata(Class<?> targetType) {
-        List<MethodMetadata> methodsMetadata = this.delegate.parseAndValidateMetadata(targetType);
+  @Override
+  public List<MethodMetadata> parseAndValidateMetadata(Class<?> targetType) {
+    List<MethodMetadata> methodsMetadata = this.delegate.parseAndValidateMetadata(targetType);
 
-        for (final MethodMetadata metadata : methodsMetadata) {
-            final Type type = metadata.returnType();
-            if (!isReactive(type)) {
-                throw new IllegalArgumentException(String.format(
-                        "Method %s of contract %s doesn't returns a org.reactivestreams.Publisher",
-                        metadata.configKey(), targetType.getSimpleName()));
-            }
+    for (final MethodMetadata metadata : methodsMetadata) {
+      final Type type = metadata.returnType();
+      if (!isReactive(type)) {
+        throw new IllegalArgumentException(String.format(
+            "Method %s of contract %s doesn't returns a org.reactivestreams.Publisher",
+            metadata.configKey(), targetType.getSimpleName()));
+      }
 
-            /*
-             * we will need to change the return type of the method to match the return type contained
-             * within the Publisher
-             */
-            Type[] actualTypes = ((ParameterizedType) type).getActualTypeArguments();
-            if (actualTypes.length > 1) {
-                throw new IllegalStateException("Expected only one contained type.");
-            } else {
-                Class<?> actual = Types.getRawType(actualTypes[0]);
-                if (Stream.class.isAssignableFrom(actual)) {
-                    throw new IllegalArgumentException(
-                            "Streams are not supported when using Reactive Wrappers");
-                }
-                metadata.returnType(actualTypes[0]);
-            }
+      /*
+       * we will need to change the return type of the method to match the return type contained
+       * within the Publisher
+       */
+      Type[] actualTypes = ((ParameterizedType) type).getActualTypeArguments();
+      if (actualTypes.length > 1) {
+        throw new IllegalStateException("Expected only one contained type.");
+      } else {
+        Class<?> actual = Types.getRawType(actualTypes[0]);
+        if (Stream.class.isAssignableFrom(actual)) {
+          throw new IllegalArgumentException(
+              "Streams are not supported when using Reactive Wrappers");
         }
-
-        return methodsMetadata;
+        metadata.returnType(actualTypes[0]);
+      }
     }
 
-    /**
-     * Ensure that the type provided implements a Reactive Streams Publisher.
-     *
-     * @param type to inspect.
-     * @return true if the type implements the Reactive Streams Publisher specification.
-     */
-    private boolean isReactive(Type type) {
-        if (!ParameterizedType.class.isAssignableFrom(type.getClass())) {
-            return false;
-        }
-        ParameterizedType parameterizedType = (ParameterizedType) type;
-        Class<?> raw = (Class<?>) parameterizedType.getRawType();
-        return Publisher.class.isAssignableFrom(raw);
+    return methodsMetadata;
+  }
+
+  /**
+   * Ensure that the type provided implements a Reactive Streams Publisher.
+   *
+   * @param type to inspect.
+   * @return true if the type implements the Reactive Streams Publisher specification.
+   */
+  private boolean isReactive(Type type) {
+    if (!ParameterizedType.class.isAssignableFrom(type.getClass())) {
+      return false;
     }
+    ParameterizedType parameterizedType = (ParameterizedType) type;
+    Class<?> raw = (Class<?>) parameterizedType.getRawType();
+    return Publisher.class.isAssignableFrom(raw);
+  }
 }

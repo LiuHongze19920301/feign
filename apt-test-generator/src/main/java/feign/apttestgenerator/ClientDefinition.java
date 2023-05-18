@@ -15,15 +15,15 @@ package feign.apttestgenerator;
 
 public class ClientDefinition {
 
-    public final String jpackage;
-    public final String className;
-    public final String fullQualifiedName;
+  public final String jpackage;
+  public final String className;
+  public final String fullQualifiedName;
 
-    public ClientDefinition(String jpackage, String className, String fullQualifiedName) {
-        super();
-        this.jpackage = jpackage;
-        this.className = className;
-        this.fullQualifiedName = fullQualifiedName;
-    }
+  public ClientDefinition(String jpackage, String className, String fullQualifiedName) {
+    super();
+    this.jpackage = jpackage;
+    this.className = className;
+    this.fullQualifiedName = fullQualifiedName;
+  }
 
 }

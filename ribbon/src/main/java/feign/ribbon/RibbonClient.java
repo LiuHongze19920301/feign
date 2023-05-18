@@ -19,7 +19,6 @@ import com.netflix.client.config.DefaultClientConfigImpl;
 import feign.Client;
 import feign.Request;
 import feign.Response;
-
 import java.io.IOException;
 import java.net.URI;
 
@@ -37,114 +36,113 @@ import java.net.URI;
  */
 public class RibbonClient implements Client {
 
-    private final Client delegate;
-    private final LBClientFactory lbClientFactory;
+  private final Client delegate;
+  private final LBClientFactory lbClientFactory;
 
 
-    public static RibbonClient create() {
-        return builder().build();
+  public static RibbonClient create() {
+    return builder().build();
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * @deprecated Use the {@link RibbonClient#create()}
+   */
+  @Deprecated
+  public RibbonClient() {
+    this(new Client.Default(null, null));
+  }
+
+  /**
+   * @deprecated Use the {@link RibbonClient#create()}
+   */
+  @Deprecated
+  public RibbonClient(Client delegate) {
+    this(delegate, new LBClientFactory.Default());
+  }
+
+  RibbonClient(Client delegate, LBClientFactory lbClientFactory) {
+    this.delegate = delegate;
+    this.lbClientFactory = lbClientFactory;
+  }
+
+  @Override
+  public Response execute(Request request, Request.Options options) throws IOException {
+    try {
+      URI asUri = URI.create(request.url());
+      String clientName = asUri.getHost();
+      URI uriWithoutHost = cleanUrl(request.url(), clientName);
+      LBClient.RibbonRequest ribbonRequest =
+          new LBClient.RibbonRequest(delegate, request, uriWithoutHost);
+      return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
+          new FeignOptionsClientConfig(options)).toResponse();
+    } catch (ClientException e) {
+      propagateFirstIOException(e);
+      throw new RuntimeException(e);
     }
+  }
 
-    public static Builder builder() {
-        return new Builder();
+  static void propagateFirstIOException(Throwable throwable) throws IOException {
+    while (throwable != null) {
+      if (throwable instanceof IOException) {
+        throw (IOException) throwable;
+      }
+      throwable = throwable.getCause();
     }
+  }
 
-    /**
-     * @deprecated Use the {@link RibbonClient#create()}
-     */
-    @Deprecated
-    public RibbonClient() {
-        this(new Client.Default(null, null));
-    }
+  static URI cleanUrl(String originalUrl, String host) {
+    return URI.create(originalUrl.replaceFirst(host, ""));
+  }
 
-    /**
-     * @deprecated Use the {@link RibbonClient#create()}
-     */
-    @Deprecated
-    public RibbonClient(Client delegate) {
-        this(delegate, new LBClientFactory.Default());
-    }
+  private LBClient lbClient(String clientName) {
+    return lbClientFactory.create(clientName);
+  }
 
-    RibbonClient(Client delegate, LBClientFactory lbClientFactory) {
-        this.delegate = delegate;
-        this.lbClientFactory = lbClientFactory;
+  static class FeignOptionsClientConfig extends DefaultClientConfigImpl {
+
+    public FeignOptionsClientConfig(Request.Options options) {
+      setProperty(CommonClientConfigKey.ConnectTimeout, options.connectTimeoutMillis());
+      setProperty(CommonClientConfigKey.ReadTimeout, options.readTimeoutMillis());
+      setProperty(CommonClientConfigKey.FollowRedirects, options.isFollowRedirects());
     }
 
     @Override
-    public Response execute(Request request, Request.Options options) throws IOException {
-        try {
-            URI asUri = URI.create(request.url());
-            String clientName = asUri.getHost();
-            URI uriWithoutHost = cleanUrl(request.url(), clientName);
-            LBClient.RibbonRequest ribbonRequest =
-                    new LBClient.RibbonRequest(delegate, request, uriWithoutHost);
-            return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
-                    new FeignOptionsClientConfig(options)).toResponse();
-        } catch (ClientException e) {
-            propagateFirstIOException(e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    static void propagateFirstIOException(Throwable throwable) throws IOException {
-        while (throwable != null) {
-            if (throwable instanceof IOException) {
-                throw (IOException) throwable;
-            }
-            throwable = throwable.getCause();
-        }
-    }
-
-    static URI cleanUrl(String originalUrl, String host) {
-        return URI.create(originalUrl.replaceFirst(host, ""));
-    }
-
-    private LBClient lbClient(String clientName) {
-        return lbClientFactory.create(clientName);
-    }
-
-    static class FeignOptionsClientConfig extends DefaultClientConfigImpl {
-
-        public FeignOptionsClientConfig(Request.Options options) {
-            setProperty(CommonClientConfigKey.ConnectTimeout, options.connectTimeoutMillis());
-            setProperty(CommonClientConfigKey.ReadTimeout, options.readTimeoutMillis());
-            setProperty(CommonClientConfigKey.FollowRedirects, options.isFollowRedirects());
-        }
-
-        @Override
-        public void loadProperties(String clientName) {
-
-        }
-
-        @Override
-        public void loadDefaultValues() {
-
-        }
+    public void loadProperties(String clientName) {
 
     }
 
-    public static final class Builder {
+    @Override
+    public void loadDefaultValues() {
 
-        Builder() {
-        }
-
-        private Client delegate;
-        private LBClientFactory lbClientFactory;
-
-        public Builder delegate(Client delegate) {
-            this.delegate = delegate;
-            return this;
-        }
-
-        public Builder lbClientFactory(LBClientFactory lbClientFactory) {
-            this.lbClientFactory = lbClientFactory;
-            return this;
-        }
-
-        public RibbonClient build() {
-            return new RibbonClient(
-                    delegate != null ? delegate : new Client.Default(null, null),
-                    lbClientFactory != null ? lbClientFactory : new LBClientFactory.Default());
-        }
     }
+
+  }
+
+  public static final class Builder {
+
+    Builder() {}
+
+    private Client delegate;
+    private LBClientFactory lbClientFactory;
+
+    public Builder delegate(Client delegate) {
+      this.delegate = delegate;
+      return this;
+    }
+
+    public Builder lbClientFactory(LBClientFactory lbClientFactory) {
+      this.lbClientFactory = lbClientFactory;
+      return this;
+    }
+
+    public RibbonClient build() {
+      return new RibbonClient(
+          delegate != null ? delegate : new Client.Default(null, null),
+          lbClientFactory != null ? lbClientFactory : new LBClientFactory.Default());
+    }
+  }
 }

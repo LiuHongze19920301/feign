@@ -14,11 +14,9 @@
 package feign.metrics4;
 
 import static feign.Util.UTF_8;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.function.Supplier;
-
 import feign.Response.Body;
 
 /**
@@ -26,49 +24,49 @@ import feign.Response.Body;
  */
 public final class MeteredBody implements Body {
 
-    private final Body delegate;
-    private Supplier<Long> count;
+  private final Body delegate;
+  private Supplier<Long> count;
 
-    public MeteredBody(Body body) {
-        this.delegate = body;
-        count = () -> 0L;
-    }
+  public MeteredBody(Body body) {
+    this.delegate = body;
+    count = () -> 0L;
+  }
 
-    @Override
-    public void close() throws IOException {
-        delegate.close();
-    }
+  @Override
+  public void close() throws IOException {
+    delegate.close();
+  }
 
-    @Override
-    public Integer length() {
-        return delegate.length();
-    }
+  @Override
+  public Integer length() {
+    return delegate.length();
+  }
 
-    @Override
-    public boolean isRepeatable() {
-        return delegate.isRepeatable();
-    }
+  @Override
+  public boolean isRepeatable() {
+    return delegate.isRepeatable();
+  }
 
-    @Override
-    public InputStream asInputStream() throws IOException {
-        // TODO, ideally, would like not to bring guava just for this
-        final CountingInputStream input = new CountingInputStream(delegate.asInputStream());
-        count = input::getCount;
-        return input;
-    }
+  @Override
+  public InputStream asInputStream() throws IOException {
+    // TODO, ideally, would like not to bring guava just for this
+    final CountingInputStream input = new CountingInputStream(delegate.asInputStream());
+    count = input::getCount;
+    return input;
+  }
 
-    @Override
-    public Reader asReader() throws IOException {
-        return new InputStreamReader(asInputStream(), UTF_8);
-    }
+  @Override
+  public Reader asReader() throws IOException {
+    return new InputStreamReader(asInputStream(), UTF_8);
+  }
 
-    public long count() {
-        return count.get();
-    }
+  public long count() {
+    return count.get();
+  }
 
-    @Override
-    public Reader asReader(Charset charset) throws IOException {
-        return new InputStreamReader(asInputStream(), charset);
-    }
+  @Override
+  public Reader asReader(Charset charset) throws IOException {
+    return new InputStreamReader(asInputStream(), charset);
+  }
 
 }

@@ -12,7 +12,7 @@
  * the License.
  */
 @XmlSchema(
-        elementFormDefault = XmlNsForm.UNQUALIFIED)
+    elementFormDefault = XmlNsForm.UNQUALIFIED)
 package feign.soap;
 
 import javax.xml.bind.annotation.XmlNsForm;

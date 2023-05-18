@@ -19,11 +19,11 @@ import jakarta.xml.bind.annotation.XmlRegistry;
 @XmlRegistry
 public class ObjectFactory {
 
-    public MockedJAXBObject createMockedJAXBObject() {
-        return new MockedJAXBObject();
-    }
+  public MockedJAXBObject createMockedJAXBObject() {
+    return new MockedJAXBObject();
+  }
 
-    public AnotherMockedJAXBObject createAnotherMockedJAXBObject() {
-        return new AnotherMockedJAXBObject();
-    }
+  public AnotherMockedJAXBObject createAnotherMockedJAXBObject() {
+    return new AnotherMockedJAXBObject();
+  }
 }

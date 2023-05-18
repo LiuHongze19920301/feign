@@ -20,55 +20,53 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
-
 import java.util.Date;
-
 import static feign.Util.UTF_8;
 import static org.junit.Assert.*;
 
 public class JsonEncoderTest {
 
-    private JSONArray jsonArray;
-    private JSONObject jsonObject;
-    private RequestTemplate requestTemplate;
+  private JSONArray jsonArray;
+  private JSONObject jsonObject;
+  private RequestTemplate requestTemplate;
 
-    @Before
-    public void setUp() {
-        jsonObject = new JSONObject();
-        jsonObject.put("a", "b");
-        jsonObject.put("c", 1);
-        jsonArray = new JSONArray();
-        jsonArray.put(jsonObject);
-        jsonArray.put(123);
-        requestTemplate = new RequestTemplate();
-    }
+  @Before
+  public void setUp() {
+    jsonObject = new JSONObject();
+    jsonObject.put("a", "b");
+    jsonObject.put("c", 1);
+    jsonArray = new JSONArray();
+    jsonArray.put(jsonObject);
+    jsonArray.put(123);
+    requestTemplate = new RequestTemplate();
+  }
 
-    @Test
-    public void encodesArray() {
-        new JsonEncoder().encode(jsonArray, JSONArray.class, requestTemplate);
-        JSONAssert.assertEquals("[{\"a\":\"b\",\"c\":1},123]",
-                new String(requestTemplate.body(), UTF_8), false);
-    }
+  @Test
+  public void encodesArray() {
+    new JsonEncoder().encode(jsonArray, JSONArray.class, requestTemplate);
+    JSONAssert.assertEquals("[{\"a\":\"b\",\"c\":1},123]",
+        new String(requestTemplate.body(), UTF_8), false);
+  }
 
-    @Test
-    public void encodesObject() {
-        new JsonEncoder().encode(jsonObject, JSONObject.class, requestTemplate);
-        JSONAssert.assertEquals("{\"a\":\"b\",\"c\":1}", new String(requestTemplate.body(), UTF_8),
-                false);
-    }
+  @Test
+  public void encodesObject() {
+    new JsonEncoder().encode(jsonObject, JSONObject.class, requestTemplate);
+    JSONAssert.assertEquals("{\"a\":\"b\",\"c\":1}", new String(requestTemplate.body(), UTF_8),
+        false);
+  }
 
-    @Test
-    public void encodesNull() {
-        new JsonEncoder().encode(null, JSONObject.class, new RequestTemplate());
-        assertNull(requestTemplate.body());
-    }
+  @Test
+  public void encodesNull() {
+    new JsonEncoder().encode(null, JSONObject.class, new RequestTemplate());
+    assertNull(requestTemplate.body());
+  }
 
-    @Test
-    public void unknownTypeThrowsEncodeException() {
-        Exception exception = assertThrows(EncodeException.class,
-                () -> new JsonEncoder().encode("qwerty", Date.class, new RequestTemplate()));
-        assertEquals("class java.util.Date is not a type supported by this encoder.",
-                exception.getMessage());
-    }
+  @Test
+  public void unknownTypeThrowsEncodeException() {
+    Exception exception = assertThrows(EncodeException.class,
+        () -> new JsonEncoder().encode("qwerty", Date.class, new RequestTemplate()));
+    assertEquals("class java.util.Date is not a type supported by this encoder.",
+        exception.getMessage());
+  }
 
 }

@@ -14,10 +14,8 @@
 package feign.hystrix;
 
 import feign.FeignException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import static feign.Util.checkNotNull;
 
 /**
@@ -46,42 +44,42 @@ import static feign.Util.checkNotNull;
  */
 public interface FallbackFactory<T> {
 
-    /**
-     * Returns an instance of the fallback appropriate for the given cause
-     *
-     * @param cause corresponds to {@link com.netflix.hystrix.AbstractCommand#getExecutionException()}
-     *              often, but not always an instance of {@link FeignException}.
-     */
-    T create(Throwable cause);
+  /**
+   * Returns an instance of the fallback appropriate for the given cause
+   *
+   * @param cause corresponds to {@link com.netflix.hystrix.AbstractCommand#getExecutionException()}
+   *        often, but not always an instance of {@link FeignException}.
+   */
+  T create(Throwable cause);
 
-    /**
-     * Returns a constant fallback after logging the cause to FINE level.
-     */
-    final class Default<T> implements FallbackFactory<T> {
-        // jul to not add a dependency
-        final Logger logger;
-        final T constant;
+  /**
+   * Returns a constant fallback after logging the cause to FINE level.
+   */
+  final class Default<T> implements FallbackFactory<T> {
+    // jul to not add a dependency
+    final Logger logger;
+    final T constant;
 
-        public Default(T constant) {
-            this(constant, Logger.getLogger(Default.class.getName()));
-        }
-
-        Default(T constant, Logger logger) {
-            this.constant = checkNotNull(constant, "fallback");
-            this.logger = checkNotNull(logger, "logger");
-        }
-
-        @Override
-        public T create(Throwable cause) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "fallback due to: " + cause.getMessage(), cause);
-            }
-            return constant;
-        }
-
-        @Override
-        public String toString() {
-            return constant.toString();
-        }
+    public Default(T constant) {
+      this(constant, Logger.getLogger(Default.class.getName()));
     }
+
+    Default(T constant, Logger logger) {
+      this.constant = checkNotNull(constant, "fallback");
+      this.logger = checkNotNull(logger, "logger");
+    }
+
+    @Override
+    public T create(Throwable cause) {
+      if (logger.isLoggable(Level.FINE)) {
+        logger.log(Level.FINE, "fallback due to: " + cause.getMessage(), cause);
+      }
+      return constant;
+    }
+
+    @Override
+    public String toString() {
+      return constant.toString();
+    }
+  }
 }

@@ -24,66 +24,66 @@ import io.dropwizard.metrics5.Timer;
 
 public class BaseMeteredClient {
 
-    protected final MetricRegistry metricRegistry;
-    protected final FeignMetricName metricName;
-    protected final MetricSuppliers metricSuppliers;
+  protected final MetricRegistry metricRegistry;
+  protected final FeignMetricName metricName;
+  protected final MetricSuppliers metricSuppliers;
 
-    public BaseMeteredClient(
-            MetricRegistry metricRegistry, FeignMetricName metricName, MetricSuppliers metricSuppliers) {
-        super();
-        this.metricRegistry = metricRegistry;
-        this.metricName = metricName;
-        this.metricSuppliers = metricSuppliers;
-    }
+  public BaseMeteredClient(
+      MetricRegistry metricRegistry, FeignMetricName metricName, MetricSuppliers metricSuppliers) {
+    super();
+    this.metricRegistry = metricRegistry;
+    this.metricName = metricName;
+    this.metricSuppliers = metricSuppliers;
+  }
 
-    protected Timer.Context createTimer(RequestTemplate template) {
-        return metricRegistry
-                .timer(
-                        metricName
-                                .metricName(template.methodMetadata(), template.feignTarget())
-                                .tagged("uri", template.methodMetadata().template().path()),
-                        metricSuppliers.timers())
-                .time();
-    }
+  protected Timer.Context createTimer(RequestTemplate template) {
+    return metricRegistry
+        .timer(
+            metricName
+                .metricName(template.methodMetadata(), template.feignTarget())
+                .tagged("uri", template.methodMetadata().template().path()),
+            metricSuppliers.timers())
+        .time();
+  }
 
-    protected void recordSuccess(RequestTemplate template, Response response) {
-        metricRegistry
-                .counter(
-                        httpResponseCode(template)
-                                .tagged("http_status", String.valueOf(response.status()))
-                                .tagged("status_group", response.status() / 100 + "xx")
-                                .tagged("http_method", template.methodMetadata().template().method())
-                                .tagged("uri", template.methodMetadata().template().path()))
-                .inc();
-    }
+  protected void recordSuccess(RequestTemplate template, Response response) {
+    metricRegistry
+        .counter(
+            httpResponseCode(template)
+                .tagged("http_status", String.valueOf(response.status()))
+                .tagged("status_group", response.status() / 100 + "xx")
+                .tagged("http_method", template.methodMetadata().template().method())
+                .tagged("uri", template.methodMetadata().template().path()))
+        .inc();
+  }
 
-    protected void recordFailure(RequestTemplate template, FeignException e) {
-        metricRegistry
-                .counter(
-                        httpResponseCode(template)
-                                .tagged("exception_name", e.getClass().getSimpleName())
-                                .tagged("root_cause_name",
-                                        ExceptionUtils.getRootCause(e).getClass().getSimpleName())
-                                .tagged("http_status", String.valueOf(e.status()))
-                                .tagged("status_group", e.status() / 100 + "xx")
-                                .tagged("http_method", template.methodMetadata().template().method())
-                                .tagged("uri", template.methodMetadata().template().path()))
-                .inc();
-    }
+  protected void recordFailure(RequestTemplate template, FeignException e) {
+    metricRegistry
+        .counter(
+            httpResponseCode(template)
+                .tagged("exception_name", e.getClass().getSimpleName())
+                .tagged("root_cause_name",
+                    ExceptionUtils.getRootCause(e).getClass().getSimpleName())
+                .tagged("http_status", String.valueOf(e.status()))
+                .tagged("status_group", e.status() / 100 + "xx")
+                .tagged("http_method", template.methodMetadata().template().method())
+                .tagged("uri", template.methodMetadata().template().path()))
+        .inc();
+  }
 
-    protected void recordFailure(RequestTemplate template, Exception e) {
-        metricRegistry
-                .counter(
-                        httpResponseCode(template)
-                                .tagged("exception_name", e.getClass().getSimpleName())
-                                .tagged("root_cause_name",
-                                        ExceptionUtils.getRootCause(e).getClass().getSimpleName())
-                                .tagged("uri", template.methodMetadata().template().path()))
-                .inc();
-    }
+  protected void recordFailure(RequestTemplate template, Exception e) {
+    metricRegistry
+        .counter(
+            httpResponseCode(template)
+                .tagged("exception_name", e.getClass().getSimpleName())
+                .tagged("root_cause_name",
+                    ExceptionUtils.getRootCause(e).getClass().getSimpleName())
+                .tagged("uri", template.methodMetadata().template().path()))
+        .inc();
+  }
 
-    private MetricName httpResponseCode(RequestTemplate template) {
-        return metricName.metricName(
-                template.methodMetadata(), template.feignTarget(), "http_response_code");
-    }
+  private MetricName httpResponseCode(RequestTemplate template) {
+    return metricName.metricName(
+        template.methodMetadata(), template.feignTarget(), "http_response_code");
+  }
 }

@@ -19,47 +19,47 @@ import feign.gson.GsonDecoder;
 
 public class HystrixCapabilityTest extends HystrixBuilderTest {
 
-    @Override
-    protected <E> E target(Class<E> api, String url) {
-        return Feign.builder()
-                .addCapability(
-                        new HystrixCapability())
-                .target(api, url);
-    }
+  @Override
+  protected <E> E target(Class<E> api, String url) {
+    return Feign.builder()
+        .addCapability(
+            new HystrixCapability())
+        .target(api, url);
+  }
 
-    @Override
-    protected <E> E target(Target<E> api) {
-        return Feign.builder()
-                .addCapability(
-                        new HystrixCapability())
-                .target(api);
-    }
+  @Override
+  protected <E> E target(Target<E> api) {
+    return Feign.builder()
+        .addCapability(
+            new HystrixCapability())
+        .target(api);
+  }
 
-    @Override
-    protected <E> E target(Class<E> api, String url, E fallback) {
-        return Feign.builder()
-                .addCapability(new HystrixCapability()
-                        .fallback(api, fallback))
-                .target(api, url);
-    }
+  @Override
+  protected <E> E target(Class<E> api, String url, E fallback) {
+    return Feign.builder()
+        .addCapability(new HystrixCapability()
+            .fallback(api, fallback))
+        .target(api, url);
+  }
 
-    @Override
-    protected TestInterface target() {
-        return Feign.builder()
-                .addCapability(new HystrixCapability()
-                        .fallback(TestInterface.class,
-                                new FallbackTestInterface()))
-                .decoder(new GsonDecoder())
-                .target(TestInterface.class, "http://localhost:" + server.getPort());
-    }
+  @Override
+  protected TestInterface target() {
+    return Feign.builder()
+        .addCapability(new HystrixCapability()
+            .fallback(TestInterface.class,
+                new FallbackTestInterface()))
+        .decoder(new GsonDecoder())
+        .target(TestInterface.class, "http://localhost:" + server.getPort());
+  }
 
-    @Override
-    protected TestInterface targetWithoutFallback() {
-        return Feign.builder()
-                .addCapability(
-                        new HystrixCapability())
-                .decoder(new GsonDecoder())
-                .target(TestInterface.class, "http://localhost:" + server.getPort());
-    }
+  @Override
+  protected TestInterface targetWithoutFallback() {
+    return Feign.builder()
+        .addCapability(
+            new HystrixCapability())
+        .decoder(new GsonDecoder())
+        .target(TestInterface.class, "http://localhost:" + server.getPort());
+  }
 
 }

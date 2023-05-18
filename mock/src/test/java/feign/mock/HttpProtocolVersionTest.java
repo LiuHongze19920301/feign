@@ -17,28 +17,27 @@ import feign.Feign;
 import feign.RequestLine;
 import feign.Response;
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 public class HttpProtocolVersionTest {
 
-    interface Remote {
+  interface Remote {
 
-        @RequestLine("GET /test")
-        Response test();
+    @RequestLine("GET /test")
+    Response test();
 
-    }
+  }
 
-    @Test
-    public void testMockProtocolVersion() {
-        Remote remote = Feign.builder()
-                .client(new MockClient().ok(HttpMethod.GET, "/test"))
-                .target(new MockTarget<>(Remote.class));
+  @Test
+  public void testMockProtocolVersion() {
+    Remote remote = Feign.builder()
+        .client(new MockClient().ok(HttpMethod.GET, "/test"))
+        .target(new MockTarget<>(Remote.class));
 
-        Response response = remote.test();
+    Response response = remote.test();
 
-        assertNotNull(response.protocolVersion());
-        assertEquals("MOCK", response.protocolVersion().toString());
-    }
+    assertNotNull(response.protocolVersion());
+    assertEquals("MOCK", response.protocolVersion().toString());
+  }
 
 }

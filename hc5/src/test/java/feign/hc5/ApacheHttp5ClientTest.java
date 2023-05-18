@@ -15,16 +15,13 @@ package feign.hc5;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
-
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.Test;
-
 import java.nio.charset.StandardCharsets;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-
 import feign.Feign;
 import feign.Feign.Builder;
 import feign.client.AbstractClientTest;
@@ -37,51 +34,51 @@ import okhttp3.mockwebserver.RecordedRequest;
  */
 public class ApacheHttp5ClientTest extends AbstractClientTest {
 
-    @Override
-    public Builder newBuilder() {
-        return Feign.builder().client(new ApacheHttp5Client());
-    }
+  @Override
+  public Builder newBuilder() {
+    return Feign.builder().client(new ApacheHttp5Client());
+  }
 
-    @Test
-    public void queryParamsAreRespectedWhenBodyIsEmpty() throws InterruptedException {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
-        final JaxRsTestInterface testInterface = Feign.builder()
-                .contract(new JAXRSContract())
-                .client(new ApacheHttp5Client(httpClient))
-                .target(JaxRsTestInterface.class, "http://localhost:" + server.getPort());
+  @Test
+  public void queryParamsAreRespectedWhenBodyIsEmpty() throws InterruptedException {
+    final HttpClient httpClient = HttpClientBuilder.create().build();
+    final JaxRsTestInterface testInterface = Feign.builder()
+        .contract(new JAXRSContract())
+        .client(new ApacheHttp5Client(httpClient))
+        .target(JaxRsTestInterface.class, "http://localhost:" + server.getPort());
 
-        server.enqueue(new MockResponse().setBody("foo"));
-        server.enqueue(new MockResponse().setBody("foo"));
+    server.enqueue(new MockResponse().setBody("foo"));
+    server.enqueue(new MockResponse().setBody("foo"));
 
-        assertEquals("foo", testInterface.withBody("foo", "bar"));
-        final RecordedRequest request1 = server.takeRequest();
-        assertEquals("/withBody?foo=foo", request1.getPath());
-        assertEquals("bar", request1.getBody().readString(StandardCharsets.UTF_8));
+    assertEquals("foo", testInterface.withBody("foo", "bar"));
+    final RecordedRequest request1 = server.takeRequest();
+    assertEquals("/withBody?foo=foo", request1.getPath());
+    assertEquals("bar", request1.getBody().readString(StandardCharsets.UTF_8));
 
-        assertEquals("foo", testInterface.withoutBody("foo"));
-        final RecordedRequest request2 = server.takeRequest();
-        assertEquals("/withoutBody?foo=foo", request2.getPath());
-        assertEquals("", request2.getBody().readString(StandardCharsets.UTF_8));
-    }
+    assertEquals("foo", testInterface.withoutBody("foo"));
+    final RecordedRequest request2 = server.takeRequest();
+    assertEquals("/withoutBody?foo=foo", request2.getPath());
+    assertEquals("", request2.getBody().readString(StandardCharsets.UTF_8));
+  }
 
-    @Override
-    public void testVeryLongResponseNullLength() {
-        assumeTrue("HC5 client seems to hang with response size equalto Long.MAX", false);
-    }
+  @Override
+  public void testVeryLongResponseNullLength() {
+    assumeTrue("HC5 client seems to hang with response size equalto Long.MAX", false);
+  }
 
-    @Override
-    public void testContentTypeDefaultsToRequestCharset() throws Exception {
-        assumeTrue("this test is flaky on windows, but works fine.", false);
-    }
+  @Override
+  public void testContentTypeDefaultsToRequestCharset() throws Exception {
+    assumeTrue("this test is flaky on windows, but works fine.", false);
+  }
 
-    @Path("/")
-    public interface JaxRsTestInterface {
-        @PUT
-        @Path("/withBody")
-        String withBody(@QueryParam("foo") String foo, String bar);
+  @Path("/")
+  public interface JaxRsTestInterface {
+    @PUT
+    @Path("/withBody")
+    String withBody(@QueryParam("foo") String foo, String bar);
 
-        @PUT
-        @Path("/withoutBody")
-        String withoutBody(@QueryParam("foo") String foo);
-    }
+    @PUT
+    @Path("/withoutBody")
+    String withoutBody(@QueryParam("foo") String foo);
+  }
 }

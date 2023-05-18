@@ -16,13 +16,11 @@ package feign.micrometer;
 
 import feign.*;
 import io.micrometer.core.instrument.*;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import static feign.micrometer.MetricTagResolver.EMPTY_TAGS_ARRAY;
 
 /**
@@ -30,85 +28,85 @@ import static feign.micrometer.MetricTagResolver.EMPTY_TAGS_ARRAY;
  */
 public class MeteredInvocationHandleFactory implements InvocationHandlerFactory {
 
-    /**
-     * Methods that are declared by super class object and, if invoked, we don't wanna record metrics
-     * for
-     */
-    private static final List<String> JAVA_OBJECT_METHODS =
-            Arrays.asList("equals", "toString", "hashCode");
+  /**
+   * Methods that are declared by super class object and, if invoked, we don't wanna record metrics
+   * for
+   */
+  private static final List<String> JAVA_OBJECT_METHODS =
+      Arrays.asList("equals", "toString", "hashCode");
 
-    private final InvocationHandlerFactory invocationHandler;
-    private final MeterRegistry meterRegistry;
-    private final MetricName metricName;
-    private final MetricTagResolver metricTagResolver;
+  private final InvocationHandlerFactory invocationHandler;
+  private final MeterRegistry meterRegistry;
+  private final MetricName metricName;
+  private final MetricTagResolver metricTagResolver;
 
-    public MeteredInvocationHandleFactory(InvocationHandlerFactory invocationHandler,
-                                          MeterRegistry meterRegistry) {
-        this(invocationHandler, meterRegistry, new FeignMetricName(Feign.class),
-                new FeignMetricTagResolver());
-    }
+  public MeteredInvocationHandleFactory(InvocationHandlerFactory invocationHandler,
+      MeterRegistry meterRegistry) {
+    this(invocationHandler, meterRegistry, new FeignMetricName(Feign.class),
+        new FeignMetricTagResolver());
+  }
 
-    public MeteredInvocationHandleFactory(InvocationHandlerFactory invocationHandler,
-                                          MeterRegistry meterRegistry, MetricName metricName, MetricTagResolver metricTagResolver) {
-        this.invocationHandler = invocationHandler;
-        this.meterRegistry = meterRegistry;
-        this.metricName = metricName;
-        this.metricTagResolver = metricTagResolver;
-    }
+  public MeteredInvocationHandleFactory(InvocationHandlerFactory invocationHandler,
+      MeterRegistry meterRegistry, MetricName metricName, MetricTagResolver metricTagResolver) {
+    this.invocationHandler = invocationHandler;
+    this.meterRegistry = meterRegistry;
+    this.metricName = metricName;
+    this.metricTagResolver = metricTagResolver;
+  }
 
-    @Override
-    public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
-        final InvocationHandler invocationHandle = invocationHandler.create(target, dispatch);
-        return (proxy, method, args) -> {
+  @Override
+  public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+    final InvocationHandler invocationHandle = invocationHandler.create(target, dispatch);
+    return (proxy, method, args) -> {
 
-            if (JAVA_OBJECT_METHODS.contains(method.getName())
-                    || Util.isDefault(method)) {
-                return invocationHandle.invoke(proxy, method, args);
-            }
+      if (JAVA_OBJECT_METHODS.contains(method.getName())
+          || Util.isDefault(method)) {
+        return invocationHandle.invoke(proxy, method, args);
+      }
 
-            final Timer.Sample sample = Timer.start(meterRegistry);
-            Timer timer = null;
-            try {
-                final Object invoke = invocationHandle.invoke(proxy, method, args);
-                timer = createTimer(target, method, args, null);
-                return invoke;
-            } catch (final FeignException e) {
-                timer = createTimer(target, method, args, e);
-                createFeignExceptionCounter(target, method, args, e).increment();
-                throw e;
-            } catch (final Throwable e) {
-                timer = createTimer(target, method, args, e);
-                throw e;
-            } finally {
-                if (timer == null) {
-                    timer = createTimer(target, method, args, null);
-                }
-                sample.stop(timer);
-            }
-        };
-    }
+      final Timer.Sample sample = Timer.start(meterRegistry);
+      Timer timer = null;
+      try {
+        final Object invoke = invocationHandle.invoke(proxy, method, args);
+        timer = createTimer(target, method, args, null);
+        return invoke;
+      } catch (final FeignException e) {
+        timer = createTimer(target, method, args, e);
+        createFeignExceptionCounter(target, method, args, e).increment();
+        throw e;
+      } catch (final Throwable e) {
+        timer = createTimer(target, method, args, e);
+        throw e;
+      } finally {
+        if (timer == null) {
+          timer = createTimer(target, method, args, null);
+        }
+        sample.stop(timer);
+      }
+    };
+  }
 
-    protected Timer createTimer(Target target, Method method, Object[] args, Throwable e) {
-        final Tag[] extraTags = extraTags(target, method, args, e);
-        final Tags allTags = metricTagResolver.tag(target.type(), method, target.url(), e, extraTags);
-        return meterRegistry.timer(metricName.name(e), allTags);
-    }
+  protected Timer createTimer(Target target, Method method, Object[] args, Throwable e) {
+    final Tag[] extraTags = extraTags(target, method, args, e);
+    final Tags allTags = metricTagResolver.tag(target.type(), method, target.url(), e, extraTags);
+    return meterRegistry.timer(metricName.name(e), allTags);
+  }
 
-    protected Counter createFeignExceptionCounter(Target target,
-                                                  Method method,
-                                                  Object[] args,
-                                                  FeignException e) {
-        final Tag[] extraTags = extraTags(target, method, args, e);
-        final Tags allTags = metricTagResolver.tag(target.type(), method, target.url(), e, extraTags)
-                .and(Tag.of("http_status", String.valueOf(e.status())),
-                        Tag.of("error_group", e.status() / 100 + "xx"));
-        return meterRegistry.counter(metricName.name("http_error"), allTags);
-    }
+  protected Counter createFeignExceptionCounter(Target target,
+                                                Method method,
+                                                Object[] args,
+                                                FeignException e) {
+    final Tag[] extraTags = extraTags(target, method, args, e);
+    final Tags allTags = metricTagResolver.tag(target.type(), method, target.url(), e, extraTags)
+        .and(Tag.of("http_status", String.valueOf(e.status())),
+            Tag.of("error_group", e.status() / 100 + "xx"));
+    return meterRegistry.counter(metricName.name("http_error"), allTags);
+  }
 
-    protected Tag[] extraTags(Target target,
-                              Method method,
-                              Object[] args,
-                              Throwable throwable) {
-        return EMPTY_TAGS_ARRAY;
-    }
+  protected Tag[] extraTags(Target target,
+                            Method method,
+                            Object[] args,
+                            Throwable throwable) {
+    return EMPTY_TAGS_ARRAY;
+  }
 }

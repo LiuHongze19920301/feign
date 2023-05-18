@@ -14,66 +14,63 @@
 package feign;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-
 import feign.Request.Options;
-
 import java.io.IOException;
 import java.util.Arrays;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 public class CapabilityTest {
 
-    private class AClient implements Client {
+  private class AClient implements Client {
 
-        public AClient(Client client) {
-            if (!(client instanceof Client.Default)) {
-                throw new RuntimeException(
-                        "Test is chaining invokations, expected Default Client instace here");
-            }
-        }
-
-
-        @Override
-        public Response execute(Request request, Options options) throws IOException {
-            return null;
-        }
-
+    public AClient(Client client) {
+      if (!(client instanceof Client.Default)) {
+        throw new RuntimeException(
+            "Test is chaining invokations, expected Default Client instace here");
+      }
     }
 
-    private class BClient implements Client {
 
-        public BClient(Client client) {
-            if (!(client instanceof AClient)) {
-                throw new RuntimeException("Test is chaining invokations, expected AClient instace here");
-            }
-        }
-
-        @Override
-        public Response execute(Request request, Options options) throws IOException {
-            return null;
-        }
-
+    @Override
+    public Response execute(Request request, Options options) throws IOException {
+      return null;
     }
 
-    @Test
-    public void enrichClient() {
-        Client enriched =
-                (Client) Capability.enrich(new Client.Default(null, null), Client.class, Arrays.asList(
-                        new Capability() {
-                            @Override
-                            public Client enrich(Client client) {
-                                return new AClient(client);
-                            }
-                        }, new Capability() {
-                            @Override
-                            public Client enrich(Client client) {
-                                return new BClient(client);
-                            }
-                        }));
+  }
 
-        assertThat(enriched, CoreMatchers.instanceOf(BClient.class));
+  private class BClient implements Client {
+
+    public BClient(Client client) {
+      if (!(client instanceof AClient)) {
+        throw new RuntimeException("Test is chaining invokations, expected AClient instace here");
+      }
     }
+
+    @Override
+    public Response execute(Request request, Options options) throws IOException {
+      return null;
+    }
+
+  }
+
+  @Test
+  public void enrichClient() {
+    Client enriched =
+        (Client) Capability.enrich(new Client.Default(null, null), Client.class, Arrays.asList(
+            new Capability() {
+              @Override
+              public Client enrich(Client client) {
+                return new AClient(client);
+              }
+            }, new Capability() {
+              @Override
+              public Client enrich(Client client) {
+                return new BClient(client);
+              }
+            }));
+
+    assertThat(enriched, CoreMatchers.instanceOf(BClient.class));
+  }
 
 }

@@ -22,104 +22,102 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import static feign.assertj.MockWebServerAssertions.assertThat;
 
 public class ContractWithRuntimeInjectionTest {
 
-    static class CaseExpander implements Param.Expander {
+  static class CaseExpander implements Param.Expander {
 
-        private final boolean lowercase;
+    private final boolean lowercase;
 
-        CaseExpander() {
-            this(false);
-        }
-
-        CaseExpander(boolean lowercase) {
-            this.lowercase = lowercase;
-        }
-
-
-        @Override
-        public String expand(Object value) {
-            return lowercase ? value.toString().toLowerCase() : value.toString();
-        }
+    CaseExpander() {
+      this(false);
     }
 
-    @Rule
-    public final MockWebServer server = new MockWebServer();
-
-    interface TestExpander {
-
-        @RequestLine("GET /path?query={query}")
-        Response get(@Param(value = "query", expander = CaseExpander.class) String query);
+    CaseExpander(boolean lowercase) {
+      this.lowercase = lowercase;
     }
 
-    @Test
-    public void baseCaseExpanderNewInstance() throws InterruptedException {
-        server.enqueue(new MockResponse());
 
-        String baseUrl = server.url("/default").toString();
+    @Override
+    public String expand(Object value) {
+      return lowercase ? value.toString().toLowerCase() : value.toString();
+    }
+  }
 
-        Feign.builder().target(TestExpander.class, baseUrl).get("FOO");
+  @Rule
+  public final MockWebServer server = new MockWebServer();
 
-        assertThat(server.takeRequest()).hasPath("/default/path?query=FOO");
+  interface TestExpander {
+
+    @RequestLine("GET /path?query={query}")
+    Response get(@Param(value = "query", expander = CaseExpander.class) String query);
+  }
+
+  @Test
+  public void baseCaseExpanderNewInstance() throws InterruptedException {
+    server.enqueue(new MockResponse());
+
+    String baseUrl = server.url("/default").toString();
+
+    Feign.builder().target(TestExpander.class, baseUrl).get("FOO");
+
+    assertThat(server.takeRequest()).hasPath("/default/path?query=FOO");
+  }
+
+  @Configuration
+  static class FeignConfiguration {
+
+    @Bean
+    CaseExpander lowercaseExpander() {
+      return new CaseExpander(true);
     }
 
-    @Configuration
-    static class FeignConfiguration {
+    @Bean
+    Contract contract(BeanFactory beanFactory) {
+      return new ContractWithRuntimeInjection(beanFactory);
+    }
+  }
 
-        @Bean
-        CaseExpander lowercaseExpander() {
-            return new CaseExpander(true);
+  static class ContractWithRuntimeInjection implements Contract {
+    final BeanFactory beanFactory;
+
+    ContractWithRuntimeInjection(BeanFactory beanFactory) {
+      this.beanFactory = beanFactory;
+    }
+
+    /**
+     * Injects {@link MethodMetadata#indexToExpander(Map)} via {@link BeanFactory#getBean(Class)}.
+     */
+    @Override
+    public List<MethodMetadata> parseAndValidateMetadata(Class<?> targetType) {
+      List<MethodMetadata> result = new Contract.Default().parseAndValidateMetadata(targetType);
+      for (MethodMetadata md : result) {
+        Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<Integer, Param.Expander>();
+        for (Map.Entry<Integer, Class<? extends Param.Expander>> entry : md.indexToExpanderClass()
+            .entrySet()) {
+          indexToExpander.put(entry.getKey(), beanFactory.getBean(entry.getValue()));
         }
-
-        @Bean
-        Contract contract(BeanFactory beanFactory) {
-            return new ContractWithRuntimeInjection(beanFactory);
-        }
+        md.indexToExpander(indexToExpander);
+      }
+      return result;
     }
+  }
 
-    static class ContractWithRuntimeInjection implements Contract {
-        final BeanFactory beanFactory;
+  @Test
+  public void contractWithRuntimeInjection() throws InterruptedException {
+    server.enqueue(new MockResponse());
 
-        ContractWithRuntimeInjection(BeanFactory beanFactory) {
-            this.beanFactory = beanFactory;
-        }
+    String baseUrl = server.url("/default").toString();
+    ApplicationContext context = new AnnotationConfigApplicationContext(FeignConfiguration.class);
 
-        /**
-         * Injects {@link MethodMetadata#indexToExpander(Map)} via {@link BeanFactory#getBean(Class)}.
-         */
-        @Override
-        public List<MethodMetadata> parseAndValidateMetadata(Class<?> targetType) {
-            List<MethodMetadata> result = new Contract.Default().parseAndValidateMetadata(targetType);
-            for (MethodMetadata md : result) {
-                Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<Integer, Param.Expander>();
-                for (Map.Entry<Integer, Class<? extends Param.Expander>> entry : md.indexToExpanderClass()
-                        .entrySet()) {
-                    indexToExpander.put(entry.getKey(), beanFactory.getBean(entry.getValue()));
-                }
-                md.indexToExpander(indexToExpander);
-            }
-            return result;
-        }
-    }
+    Feign.builder()
+        .contract(context.getBean(Contract.class))
+        .target(TestExpander.class, baseUrl).get("FOO");
 
-    @Test
-    public void contractWithRuntimeInjection() throws InterruptedException {
-        server.enqueue(new MockResponse());
-
-        String baseUrl = server.url("/default").toString();
-        ApplicationContext context = new AnnotationConfigApplicationContext(FeignConfiguration.class);
-
-        Feign.builder()
-                .contract(context.getBean(Contract.class))
-                .target(TestExpander.class, baseUrl).get("FOO");
-
-        assertThat(server.takeRequest()).hasPath("/default/path?query=foo");
-    }
+    assertThat(server.takeRequest()).hasPath("/default/path?query=foo");
+  }
 }

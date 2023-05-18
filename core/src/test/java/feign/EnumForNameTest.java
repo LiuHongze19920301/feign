@@ -18,65 +18,62 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
 import java.util.Arrays;
-
 import feign.Request.ProtocolVersion;
-
 import static feign.Util.enumForName;
 import static org.junit.Assert.*;
 
 public class EnumForNameTest {
 
-    @RunWith(Parameterized.class)
-    public static class KnownEnumValues {
+  @RunWith(Parameterized.class)
+  public static class KnownEnumValues {
 
-        @Parameter
-        public Object name;
-        @Parameter(1)
-        public ProtocolVersion expectedProtocolVersion;
+    @Parameter
+    public Object name;
+    @Parameter(1)
+    public ProtocolVersion expectedProtocolVersion;
 
-        @Parameters
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {ProtocolVersion.HTTP_1_0, ProtocolVersion.HTTP_1_0},
-                    {"HTTP/1.0", ProtocolVersion.HTTP_1_0},
-                    {ProtocolVersion.HTTP_1_1, ProtocolVersion.HTTP_1_1},
-                    {"HTTP/1.1", ProtocolVersion.HTTP_1_1},
-                    {ProtocolVersion.HTTP_2, ProtocolVersion.HTTP_2},
-                    {"HTTP/2.0", ProtocolVersion.HTTP_2}
-            });
-        }
-
-        @Test
-        public void getKnownEnumValue() {
-            assertEquals("known enum value: " + name, expectedProtocolVersion,
-                    enumForName(ProtocolVersion.class, name));
-        }
-
+    @Parameters
+    public static Iterable<Object[]> data() {
+      return Arrays.asList(new Object[][] {
+          {ProtocolVersion.HTTP_1_0, ProtocolVersion.HTTP_1_0},
+          {"HTTP/1.0", ProtocolVersion.HTTP_1_0},
+          {ProtocolVersion.HTTP_1_1, ProtocolVersion.HTTP_1_1},
+          {"HTTP/1.1", ProtocolVersion.HTTP_1_1},
+          {ProtocolVersion.HTTP_2, ProtocolVersion.HTTP_2},
+          {"HTTP/2.0", ProtocolVersion.HTTP_2}
+      });
     }
 
-    @RunWith(Parameterized.class)
-    public static class UnknownEnumValues {
-
-        @Parameter
-        public Object name;
-
-        @Parameters
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {Request.HttpMethod.GET},
-                    {"SPDY/3"},
-                    {null},
-                    {"HTTP/2"}
-            });
-        }
-
-        @Test
-        public void getKnownEnumValue() {
-            assertNull("unknown enum value: " + name, enumForName(ProtocolVersion.class, name));
-        }
-
+    @Test
+    public void getKnownEnumValue() {
+      assertEquals("known enum value: " + name, expectedProtocolVersion,
+          enumForName(ProtocolVersion.class, name));
     }
+
+  }
+
+  @RunWith(Parameterized.class)
+  public static class UnknownEnumValues {
+
+    @Parameter
+    public Object name;
+
+    @Parameters
+    public static Iterable<Object[]> data() {
+      return Arrays.asList(new Object[][] {
+          {Request.HttpMethod.GET},
+          {"SPDY/3"},
+          {null},
+          {"HTTP/2"}
+      });
+    }
+
+    @Test
+    public void getKnownEnumValue() {
+      assertNull("unknown enum value: " + name, enumForName(ProtocolVersion.class, name));
+    }
+
+  }
 
 }

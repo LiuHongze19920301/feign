@@ -24,45 +24,45 @@ import io.dropwizard.metrics5.SharedMetricRegistries;
 
 public class Metrics5Capability implements Capability {
 
-    private final MetricRegistry metricRegistry;
-    private final MetricSuppliers metricSuppliers;
+  private final MetricRegistry metricRegistry;
+  private final MetricSuppliers metricSuppliers;
 
-    public Metrics5Capability() {
-        this(SharedMetricRegistries.getOrCreate("feign"), new MetricSuppliers());
-    }
+  public Metrics5Capability() {
+    this(SharedMetricRegistries.getOrCreate("feign"), new MetricSuppliers());
+  }
 
-    public Metrics5Capability(MetricRegistry metricRegistry) {
-        this(metricRegistry, new MetricSuppliers());
-    }
+  public Metrics5Capability(MetricRegistry metricRegistry) {
+    this(metricRegistry, new MetricSuppliers());
+  }
 
-    public Metrics5Capability(MetricRegistry metricRegistry, MetricSuppliers metricSuppliers) {
-        this.metricRegistry = metricRegistry;
-        this.metricSuppliers = metricSuppliers;
-    }
+  public Metrics5Capability(MetricRegistry metricRegistry, MetricSuppliers metricSuppliers) {
+    this.metricRegistry = metricRegistry;
+    this.metricSuppliers = metricSuppliers;
+  }
 
-    @Override
-    public Client enrich(Client client) {
-        return new MeteredClient(client, metricRegistry, metricSuppliers);
-    }
+  @Override
+  public Client enrich(Client client) {
+    return new MeteredClient(client, metricRegistry, metricSuppliers);
+  }
 
-    @Override
-    public AsyncClient<Object> enrich(AsyncClient<Object> client) {
-        return new MeteredAsyncClient(client, metricRegistry, metricSuppliers);
-    }
+  @Override
+  public AsyncClient<Object> enrich(AsyncClient<Object> client) {
+    return new MeteredAsyncClient(client, metricRegistry, metricSuppliers);
+  }
 
-    @Override
-    public Encoder enrich(Encoder encoder) {
-        return new MeteredEncoder(encoder, metricRegistry, metricSuppliers);
-    }
+  @Override
+  public Encoder enrich(Encoder encoder) {
+    return new MeteredEncoder(encoder, metricRegistry, metricSuppliers);
+  }
 
-    @Override
-    public Decoder enrich(Decoder decoder) {
-        return new MeteredDecoder(decoder, metricRegistry, metricSuppliers);
-    }
+  @Override
+  public Decoder enrich(Decoder decoder) {
+    return new MeteredDecoder(decoder, metricRegistry, metricSuppliers);
+  }
 
-    @Override
-    public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
-        return new MeteredInvocationHandleFactory(
-                invocationHandlerFactory, metricRegistry, metricSuppliers);
-    }
+  @Override
+  public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
+    return new MeteredInvocationHandleFactory(
+        invocationHandlerFactory, metricRegistry, metricSuppliers);
+  }
 }

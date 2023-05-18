@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.*;
-
 import feign.Client;
 import feign.Request.Options;
 
@@ -38,98 +37,98 @@ import feign.Request.Options;
  */
 public class JAXRSClient implements Client {
 
-    private final ClientBuilder clientBuilder;
+  private final ClientBuilder clientBuilder;
 
-    public JAXRSClient() {
-        this(ClientBuilder.newBuilder());
+  public JAXRSClient() {
+    this(ClientBuilder.newBuilder());
+  }
+
+  public JAXRSClient(ClientBuilder clientBuilder) {
+    this.clientBuilder = clientBuilder;
+  }
+
+  @Override
+  public feign.Response execute(feign.Request request, Options options) throws IOException {
+    final Response response = clientBuilder
+        .connectTimeout(options.connectTimeoutMillis(), TimeUnit.MILLISECONDS)
+        .readTimeout(options.readTimeoutMillis(), TimeUnit.MILLISECONDS)
+        .build()
+        .target(request.url())
+        .request()
+        .headers(toMultivaluedMap(request.headers()))
+        .method(request.httpMethod().name(), createRequestEntity(request));
+
+    return feign.Response.builder()
+        .request(request)
+        .body(response.readEntity(InputStream.class),
+            integerHeader(response, HttpHeaders.CONTENT_LENGTH))
+        .headers(toMap(response.getStringHeaders()))
+        .status(response.getStatus())
+        .reason(response.getStatusInfo().getReasonPhrase())
+        .build();
+  }
+
+  private Entity<byte[]> createRequestEntity(feign.Request request) {
+    if (request.body() == null) {
+      return null;
     }
 
-    public JAXRSClient(ClientBuilder clientBuilder) {
-        this.clientBuilder = clientBuilder;
+    return Entity.entity(
+        request.body(),
+        new Variant(mediaType(request.headers()), locale(request.headers()),
+            encoding(request.charset())));
+  }
+
+  private Integer integerHeader(Response response, String header) {
+    final MultivaluedMap<String, String> headers = response.getStringHeaders();
+    if (!headers.containsKey(header)) {
+      return null;
     }
 
-    @Override
-    public feign.Response execute(feign.Request request, Options options) throws IOException {
-        final Response response = clientBuilder
-                .connectTimeout(options.connectTimeoutMillis(), TimeUnit.MILLISECONDS)
-                .readTimeout(options.readTimeoutMillis(), TimeUnit.MILLISECONDS)
-                .build()
-                .target(request.url())
-                .request()
-                .headers(toMultivaluedMap(request.headers()))
-                .method(request.httpMethod().name(), createRequestEntity(request));
-
-        return feign.Response.builder()
-                .request(request)
-                .body(response.readEntity(InputStream.class),
-                        integerHeader(response, HttpHeaders.CONTENT_LENGTH))
-                .headers(toMap(response.getStringHeaders()))
-                .status(response.getStatus())
-                .reason(response.getStatusInfo().getReasonPhrase())
-                .build();
+    try {
+      return new Integer(headers.getFirst(header));
+    } catch (final NumberFormatException e) {
+      // not a number or too big to fit Integer
+      return null;
     }
+  }
 
-    private Entity<byte[]> createRequestEntity(feign.Request request) {
-        if (request.body() == null) {
-            return null;
-        }
+  private String encoding(Charset charset) {
+    if (charset == null)
+      return null;
 
-        return Entity.entity(
-                request.body(),
-                new Variant(mediaType(request.headers()), locale(request.headers()),
-                        encoding(request.charset())));
-    }
+    return charset.name();
+  }
 
-    private Integer integerHeader(Response response, String header) {
-        final MultivaluedMap<String, String> headers = response.getStringHeaders();
-        if (!headers.containsKey(header)) {
-            return null;
-        }
+  private String locale(Map<String, Collection<String>> headers) {
+    if (!headers.containsKey(HttpHeaders.CONTENT_LANGUAGE))
+      return null;
 
-        try {
-            return new Integer(headers.getFirst(header));
-        } catch (final NumberFormatException e) {
-            // not a number or too big to fit Integer
-            return null;
-        }
-    }
+    return headers.get(HttpHeaders.CONTENT_LANGUAGE).iterator().next();
+  }
 
-    private String encoding(Charset charset) {
-        if (charset == null)
-            return null;
+  private MediaType mediaType(Map<String, Collection<String>> headers) {
+    if (!headers.containsKey(HttpHeaders.CONTENT_TYPE))
+      return null;
 
-        return charset.name();
-    }
+    return MediaType.valueOf(headers.get(HttpHeaders.CONTENT_TYPE).iterator().next());
+  }
 
-    private String locale(Map<String, Collection<String>> headers) {
-        if (!headers.containsKey(HttpHeaders.CONTENT_LANGUAGE))
-            return null;
+  private MultivaluedMap<String, Object> toMultivaluedMap(Map<String, Collection<String>> headers) {
+    final MultivaluedHashMap<String, Object> mvHeaders = new MultivaluedHashMap<>();
 
-        return headers.get(HttpHeaders.CONTENT_LANGUAGE).iterator().next();
-    }
+    headers.forEach((key, value1) -> value1
+        .forEach(value -> mvHeaders.add(key, value)));
 
-    private MediaType mediaType(Map<String, Collection<String>> headers) {
-        if (!headers.containsKey(HttpHeaders.CONTENT_TYPE))
-            return null;
+    return mvHeaders;
+  }
 
-        return MediaType.valueOf(headers.get(HttpHeaders.CONTENT_TYPE).iterator().next());
-    }
-
-    private MultivaluedMap<String, Object> toMultivaluedMap(Map<String, Collection<String>> headers) {
-        final MultivaluedHashMap<String, Object> mvHeaders = new MultivaluedHashMap<>();
-
-        headers.forEach((key, value1) -> value1
-                .forEach(value -> mvHeaders.add(key, value)));
-
-        return mvHeaders;
-    }
-
-    private Map<String, Collection<String>> toMap(MultivaluedMap<String, String> headers) {
-        return headers.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Entry::getKey,
-                        Entry::getValue));
-    }
+  private Map<String, Collection<String>> toMap(MultivaluedMap<String, String> headers) {
+    return headers.entrySet().stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            Entry::getValue));
+  }
 
 }
 

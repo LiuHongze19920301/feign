@@ -27,39 +27,39 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 public class MicrometerCapability implements Capability {
 
-    private final MeterRegistry meterRegistry;
+  private final MeterRegistry meterRegistry;
 
-    public MicrometerCapability() {
-        this(new SimpleMeterRegistry(SimpleConfig.DEFAULT, Clock.SYSTEM));
-        Metrics.addRegistry(meterRegistry);
-    }
+  public MicrometerCapability() {
+    this(new SimpleMeterRegistry(SimpleConfig.DEFAULT, Clock.SYSTEM));
+    Metrics.addRegistry(meterRegistry);
+  }
 
-    public MicrometerCapability(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-    }
+  public MicrometerCapability(MeterRegistry meterRegistry) {
+    this.meterRegistry = meterRegistry;
+  }
 
-    @Override
-    public Client enrich(Client client) {
-        return new MeteredClient(client, meterRegistry);
-    }
+  @Override
+  public Client enrich(Client client) {
+    return new MeteredClient(client, meterRegistry);
+  }
 
-    @Override
-    public AsyncClient<Object> enrich(AsyncClient<Object> client) {
-        return new MeteredAsyncClient(client, meterRegistry);
-    }
+  @Override
+  public AsyncClient<Object> enrich(AsyncClient<Object> client) {
+    return new MeteredAsyncClient(client, meterRegistry);
+  }
 
-    @Override
-    public Encoder enrich(Encoder encoder) {
-        return new MeteredEncoder(encoder, meterRegistry);
-    }
+  @Override
+  public Encoder enrich(Encoder encoder) {
+    return new MeteredEncoder(encoder, meterRegistry);
+  }
 
-    @Override
-    public Decoder enrich(Decoder decoder) {
-        return new MeteredDecoder(decoder, meterRegistry);
-    }
+  @Override
+  public Decoder enrich(Decoder decoder) {
+    return new MeteredDecoder(decoder, meterRegistry);
+  }
 
-    @Override
-    public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
-        return new MeteredInvocationHandleFactory(invocationHandlerFactory, meterRegistry);
-    }
+  @Override
+  public InvocationHandlerFactory enrich(InvocationHandlerFactory invocationHandlerFactory) {
+    return new MeteredInvocationHandleFactory(invocationHandlerFactory, meterRegistry);
+  }
 }

@@ -14,7 +14,6 @@
 package feign.jaxb;
 
 import jakarta.xml.bind.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,170 +27,170 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class JAXBContextFactory {
 
-    private final ConcurrentHashMap<JAXBContextCacheKey, JAXBContext> jaxbContexts =
-            new ConcurrentHashMap<>(64);
-    private final Map<String, Object> properties;
-    private final JAXBContextInstantationMode jaxbContextInstantationMode;
+  private final ConcurrentHashMap<JAXBContextCacheKey, JAXBContext> jaxbContexts =
+      new ConcurrentHashMap<>(64);
+  private final Map<String, Object> properties;
+  private final JAXBContextInstantationMode jaxbContextInstantationMode;
 
-    private JAXBContextFactory(Map<String, Object> properties,
-                               JAXBContextInstantationMode jaxbContextInstantationMode) {
-        this.properties = properties;
-        this.jaxbContextInstantationMode = jaxbContextInstantationMode;
+  private JAXBContextFactory(Map<String, Object> properties,
+      JAXBContextInstantationMode jaxbContextInstantationMode) {
+    this.properties = properties;
+    this.jaxbContextInstantationMode = jaxbContextInstantationMode;
+  }
+
+  /**
+   * Creates a new {@link jakarta.xml.bind.Unmarshaller} that handles the supplied class.
+   */
+  public Unmarshaller createUnmarshaller(Class<?> clazz) throws JAXBException {
+    return getContext(clazz).createUnmarshaller();
+  }
+
+  /**
+   * Creates a new {@link jakarta.xml.bind.Marshaller} that handles the supplied class.
+   */
+  public Marshaller createMarshaller(Class<?> clazz) throws JAXBException {
+    Marshaller marshaller = getContext(clazz).createMarshaller();
+    setMarshallerProperties(marshaller);
+    return marshaller;
+  }
+
+  private void setMarshallerProperties(Marshaller marshaller) throws PropertyException {
+    for (Entry<String, Object> en : properties.entrySet()) {
+      marshaller.setProperty(en.getKey(), en.getValue());
     }
+  }
+
+  private JAXBContext getContext(Class<?> clazz) throws JAXBException {
+    JAXBContextCacheKey cacheKey = jaxbContextInstantationMode.getJAXBContextCacheKey(clazz);
+    JAXBContext jaxbContext = this.jaxbContexts.get(cacheKey);
+
+    if (jaxbContext == null) {
+      jaxbContext = jaxbContextInstantationMode.getJAXBContext(clazz);
+      this.jaxbContexts.putIfAbsent(cacheKey, jaxbContext);
+    }
+    return jaxbContext;
+  }
+
+  /**
+   * Will preload factory's cache with JAXBContext for provided classes
+   *
+   * @param classes
+   * @throws jakarta.xml.bind.JAXBException
+   */
+  private void preloadContextCache(List<Class<?>> classes) throws JAXBException {
+    if (classes != null && !classes.isEmpty()) {
+      for (Class<?> clazz : classes) {
+        getContext(clazz);
+      }
+    }
+  }
+
+  /**
+   * Creates instances of {@link JAXBContextFactory}.
+   */
+  public static class Builder {
+
+    private final Map<String, Object> properties = new HashMap<>(10);
+
+    private JAXBContextInstantationMode jaxbContextInstantationMode =
+        JAXBContextInstantationMode.CLASS;
 
     /**
-     * Creates a new {@link jakarta.xml.bind.Unmarshaller} that handles the supplied class.
+     * Sets the jaxb.encoding property of any Marshaller created by this factory.
      */
-    public Unmarshaller createUnmarshaller(Class<?> clazz) throws JAXBException {
-        return getContext(clazz).createUnmarshaller();
+    public Builder withMarshallerJAXBEncoding(String value) {
+      properties.put(Marshaller.JAXB_ENCODING, value);
+      return this;
     }
 
     /**
-     * Creates a new {@link jakarta.xml.bind.Marshaller} that handles the supplied class.
+     * Sets the jaxb.schemaLocation property of any Marshaller created by this factory.
      */
-    public Marshaller createMarshaller(Class<?> clazz) throws JAXBException {
-        Marshaller marshaller = getContext(clazz).createMarshaller();
-        setMarshallerProperties(marshaller);
-        return marshaller;
-    }
-
-    private void setMarshallerProperties(Marshaller marshaller) throws PropertyException {
-        for (Entry<String, Object> en : properties.entrySet()) {
-            marshaller.setProperty(en.getKey(), en.getValue());
-        }
-    }
-
-    private JAXBContext getContext(Class<?> clazz) throws JAXBException {
-        JAXBContextCacheKey cacheKey = jaxbContextInstantationMode.getJAXBContextCacheKey(clazz);
-        JAXBContext jaxbContext = this.jaxbContexts.get(cacheKey);
-
-        if (jaxbContext == null) {
-            jaxbContext = jaxbContextInstantationMode.getJAXBContext(clazz);
-            this.jaxbContexts.putIfAbsent(cacheKey, jaxbContext);
-        }
-        return jaxbContext;
+    public Builder withMarshallerSchemaLocation(String value) {
+      properties.put(Marshaller.JAXB_SCHEMA_LOCATION, value);
+      return this;
     }
 
     /**
-     * Will preload factory's cache with JAXBContext for provided classes
+     * Sets the jaxb.noNamespaceSchemaLocation property of any Marshaller created by this factory.
+     */
+    public Builder withMarshallerNoNamespaceSchemaLocation(String value) {
+      properties.put(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, value);
+      return this;
+    }
+
+    /**
+     * Sets the jaxb.formatted.output property of any Marshaller created by this factory.
+     */
+    public Builder withMarshallerFormattedOutput(Boolean value) {
+      properties.put(Marshaller.JAXB_FORMATTED_OUTPUT, value);
+      return this;
+    }
+
+    /**
+     * Sets the jaxb.fragment property of any Marshaller created by this factory.
+     */
+    public Builder withMarshallerFragment(Boolean value) {
+      properties.put(Marshaller.JAXB_FRAGMENT, value);
+      return this;
+    }
+
+    /**
+     * Sets the given property of any Marshaller created by this factory.
+     *
+     * <p>
+     * Example : <br>
+     * <br>
+     * <code>
+     * new JAXBContextFactory.Builder()
+     * .withProperty("com.sun.xml.internal.bind.xmlHeaders", "&lt;!DOCTYPE Example SYSTEM \&quot;example.dtd\&quot;&gt;")
+     * .build();
+     * </code>
+     * </p>
+     */
+    public Builder withProperty(String key, Object value) {
+      properties.put(key, value);
+      return this;
+    }
+
+    /**
+     * Provide an instantiation mode for JAXB Contexts, can be class or package, default is class if
+     * this method is not called.
+     *
+     * <p>
+     * Example : <br>
+     * <br>
+     * <code>
+     * new JAXBContextFactory.Builder()
+     * .withJAXBContextInstantiationMode(JAXBContextInstantationMode.PACKAGE)
+     * .build();
+     * </code>
+     * </p>
+     */
+    public Builder withJAXBContextInstantiationMode(JAXBContextInstantationMode jaxbContextInstantiationMode) {
+      this.jaxbContextInstantationMode = jaxbContextInstantiationMode;
+      return this;
+    }
+
+    /**
+     * Creates a new {@link JAXBContextFactory} instance with a lazy loading cached context
+     */
+    public JAXBContextFactory build() {
+      return new JAXBContextFactory(properties, jaxbContextInstantationMode);
+    }
+
+    /**
+     * Creates a new {@link JAXBContextFactory} instance. Pre-loads context cache with given classes
      *
      * @param classes
-     * @throws jakarta.xml.bind.JAXBException
+     * @return ContextFactory with a pre-populated JAXBContext cache
+     * @throws jakarta.xml.bind.JAXBException if provided classes can't be used for JAXBContext
+     *         generation most likely due to missing JAXB annotations
      */
-    private void preloadContextCache(List<Class<?>> classes) throws JAXBException {
-        if (classes != null && !classes.isEmpty()) {
-            for (Class<?> clazz : classes) {
-                getContext(clazz);
-            }
-        }
+    public JAXBContextFactory build(List<Class<?>> classes) throws JAXBException {
+      JAXBContextFactory factory = new JAXBContextFactory(properties, jaxbContextInstantationMode);
+      factory.preloadContextCache(classes);
+      return factory;
     }
-
-    /**
-     * Creates instances of {@link JAXBContextFactory}.
-     */
-    public static class Builder {
-
-        private final Map<String, Object> properties = new HashMap<>(10);
-
-        private JAXBContextInstantationMode jaxbContextInstantationMode =
-                JAXBContextInstantationMode.CLASS;
-
-        /**
-         * Sets the jaxb.encoding property of any Marshaller created by this factory.
-         */
-        public Builder withMarshallerJAXBEncoding(String value) {
-            properties.put(Marshaller.JAXB_ENCODING, value);
-            return this;
-        }
-
-        /**
-         * Sets the jaxb.schemaLocation property of any Marshaller created by this factory.
-         */
-        public Builder withMarshallerSchemaLocation(String value) {
-            properties.put(Marshaller.JAXB_SCHEMA_LOCATION, value);
-            return this;
-        }
-
-        /**
-         * Sets the jaxb.noNamespaceSchemaLocation property of any Marshaller created by this factory.
-         */
-        public Builder withMarshallerNoNamespaceSchemaLocation(String value) {
-            properties.put(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, value);
-            return this;
-        }
-
-        /**
-         * Sets the jaxb.formatted.output property of any Marshaller created by this factory.
-         */
-        public Builder withMarshallerFormattedOutput(Boolean value) {
-            properties.put(Marshaller.JAXB_FORMATTED_OUTPUT, value);
-            return this;
-        }
-
-        /**
-         * Sets the jaxb.fragment property of any Marshaller created by this factory.
-         */
-        public Builder withMarshallerFragment(Boolean value) {
-            properties.put(Marshaller.JAXB_FRAGMENT, value);
-            return this;
-        }
-
-        /**
-         * Sets the given property of any Marshaller created by this factory.
-         *
-         * <p>
-         * Example : <br>
-         * <br>
-         * <code>
-         * new JAXBContextFactory.Builder()
-         * .withProperty("com.sun.xml.internal.bind.xmlHeaders", "&lt;!DOCTYPE Example SYSTEM \&quot;example.dtd\&quot;&gt;")
-         * .build();
-         * </code>
-         * </p>
-         */
-        public Builder withProperty(String key, Object value) {
-            properties.put(key, value);
-            return this;
-        }
-
-        /**
-         * Provide an instantiation mode for JAXB Contexts, can be class or package, default is class if
-         * this method is not called.
-         *
-         * <p>
-         * Example : <br>
-         * <br>
-         * <code>
-         * new JAXBContextFactory.Builder()
-         * .withJAXBContextInstantiationMode(JAXBContextInstantationMode.PACKAGE)
-         * .build();
-         * </code>
-         * </p>
-         */
-        public Builder withJAXBContextInstantiationMode(JAXBContextInstantationMode jaxbContextInstantiationMode) {
-            this.jaxbContextInstantationMode = jaxbContextInstantiationMode;
-            return this;
-        }
-
-        /**
-         * Creates a new {@link JAXBContextFactory} instance with a lazy loading cached context
-         */
-        public JAXBContextFactory build() {
-            return new JAXBContextFactory(properties, jaxbContextInstantationMode);
-        }
-
-        /**
-         * Creates a new {@link JAXBContextFactory} instance. Pre-loads context cache with given classes
-         *
-         * @param classes
-         * @return ContextFactory with a pre-populated JAXBContext cache
-         * @throws jakarta.xml.bind.JAXBException if provided classes can't be used for JAXBContext
-         *                                        generation most likely due to missing JAXB annotations
-         */
-        public JAXBContextFactory build(List<Class<?>> classes) throws JAXBException {
-            JAXBContextFactory factory = new JAXBContextFactory(properties, jaxbContextInstantationMode);
-            factory.preloadContextCache(classes);
-            return factory;
-        }
-    }
+  }
 }

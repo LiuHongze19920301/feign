@@ -18,137 +18,129 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class AnnotationErrorDecoderInheritanceMethodLevelAnnotationTest extends
-        AbstractAnnotationErrorDecoderTest<AnnotationErrorDecoderInheritanceMethodLevelAnnotationTest.SecondLevelInterface> {
-    @Override
-    public Class<SecondLevelInterface> interfaceAtTest() {
-        return SecondLevelInterface.class;
-    }
+    AbstractAnnotationErrorDecoderTest<AnnotationErrorDecoderInheritanceMethodLevelAnnotationTest.SecondLevelInterface> {
+  @Override
+  public Class<SecondLevelInterface> interfaceAtTest() {
+    return SecondLevelInterface.class;
+  }
 
-    @Parameters(
-            name = "{0}: When error code ({1}) on method ({2}) should return exception type ({3})")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {"Test Code Specific At Method", 403, "topLevelMethod1",
-                        MethodTopLevelDefaultException.class},
-                {"Test Code Specific At Method", 404, "topLevelMethod1",
-                        MethodTopLevelAnnotationException.class},
-                {"Test Code Specific At Method", 403, "topLevelMethod2",
-                        MethodSecondLevelDefaultException.class},
-                {"Test Code Specific At Method", 404, "topLevelMethod2",
-                        MethodSecondLevelAnnotationException.class},
-                {"Test Code Specific At Method", 403, "topLevelMethod3",
-                        MethodSecondLevelDefaultException.class},
-                {"Test Code Specific At Method", 404, "topLevelMethod3",
-                        MethodSecondLevelErrorHandlingException.class},
-                {"Test Code Specific At Method", 403, "topLevelMethod4",
-                        MethodSecondLevelDefaultException.class},
-                {"Test Code Specific At Method", 404, "topLevelMethod4",
-                        MethodSecondLevelAnnotationException.class},
-        });
-    }
+  @Parameters(
+      name = "{0}: When error code ({1}) on method ({2}) should return exception type ({3})")
+  public static Iterable<Object[]> data() {
+    return Arrays.asList(new Object[][] {
+        {"Test Code Specific At Method", 403, "topLevelMethod1",
+            MethodTopLevelDefaultException.class},
+        {"Test Code Specific At Method", 404, "topLevelMethod1",
+            MethodTopLevelAnnotationException.class},
+        {"Test Code Specific At Method", 403, "topLevelMethod2",
+            MethodSecondLevelDefaultException.class},
+        {"Test Code Specific At Method", 404, "topLevelMethod2",
+            MethodSecondLevelAnnotationException.class},
+        {"Test Code Specific At Method", 403, "topLevelMethod3",
+            MethodSecondLevelDefaultException.class},
+        {"Test Code Specific At Method", 404, "topLevelMethod3",
+            MethodSecondLevelErrorHandlingException.class},
+        {"Test Code Specific At Method", 403, "topLevelMethod4",
+            MethodSecondLevelDefaultException.class},
+        {"Test Code Specific At Method", 404, "topLevelMethod4",
+            MethodSecondLevelAnnotationException.class},
+    });
+  }
 
-    @Parameter // first data value (0) is default
-    public String testType;
+  @Parameter // first data value (0) is default
+  public String testType;
 
-    @Parameter(1)
-    public int errorCode;
+  @Parameter(1)
+  public int errorCode;
 
-    @Parameter(2)
-    public String method;
+  @Parameter(2)
+  public String method;
 
-    @Parameter(3)
-    public Class<? extends Exception> expectedExceptionClass;
+  @Parameter(3)
+  public Class<? extends Exception> expectedExceptionClass;
 
-    @Test
-    public void test() throws Exception {
-        AnnotationErrorDecoder decoder =
-                AnnotationErrorDecoder.builderFor(SecondLevelInterface.class).build();
+  @Test
+  public void test() throws Exception {
+    AnnotationErrorDecoder decoder =
+        AnnotationErrorDecoder.builderFor(SecondLevelInterface.class).build();
 
-        assertThat(decoder.decode(feignConfigKey(method), testResponse(errorCode)).getClass())
-                .isEqualTo(expectedExceptionClass);
-    }
+    assertThat(decoder.decode(feignConfigKey(method), testResponse(errorCode)).getClass())
+        .isEqualTo(expectedExceptionClass);
+  }
 
-    interface TopLevelInterface {
-        @TopLevelMethodErrorHandling
-        void topLevelMethod1();
+  interface TopLevelInterface {
+    @TopLevelMethodErrorHandling
+    void topLevelMethod1();
 
-        @TopLevelMethodErrorHandling
-        void topLevelMethod2();
+    @TopLevelMethodErrorHandling
+    void topLevelMethod2();
 
-        @TopLevelMethodErrorHandling
-        void topLevelMethod3();
+    @TopLevelMethodErrorHandling
+    void topLevelMethod3();
 
-        @ErrorHandling(codeSpecific = @ErrorCodes(codes = {404},
-                generate = TopLevelMethodErrorHandlingException.class))
-        void topLevelMethod4();
-    }
+    @ErrorHandling(codeSpecific = @ErrorCodes(codes = {404},
+        generate = TopLevelMethodErrorHandlingException.class))
+    void topLevelMethod4();
+  }
 
-    interface SecondLevelInterface extends TopLevelInterface {
-        @SecondLevelMethodErrorHandling
-        void topLevelMethod2();
-
-        @ErrorHandling(
-                codeSpecific = {
-                        @ErrorCodes(codes = {404}, generate = MethodSecondLevelErrorHandlingException.class)},
-                defaultException = MethodSecondLevelDefaultException.class)
-        void topLevelMethod3();
-
-        @SecondLevelMethodErrorHandling
-        void topLevelMethod4();
-    }
+  interface SecondLevelInterface extends TopLevelInterface {
+    @SecondLevelMethodErrorHandling
+    void topLevelMethod2();
 
     @ErrorHandling(
-            codeSpecific = {
-                    @ErrorCodes(codes = {404}, generate = MethodTopLevelAnnotationException.class),},
-            defaultException = MethodTopLevelDefaultException.class)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface TopLevelMethodErrorHandling {
-    }
+        codeSpecific = {
+            @ErrorCodes(codes = {404}, generate = MethodSecondLevelErrorHandlingException.class)},
+        defaultException = MethodSecondLevelDefaultException.class)
+    void topLevelMethod3();
 
-    @ErrorHandling(
-            codeSpecific = {
-                    @ErrorCodes(codes = {404}, generate = MethodSecondLevelAnnotationException.class),},
-            defaultException = MethodSecondLevelDefaultException.class)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface SecondLevelMethodErrorHandling {
-    }
+    @SecondLevelMethodErrorHandling
+    void topLevelMethod4();
+  }
 
-    static class MethodTopLevelDefaultException extends Exception {
-        public MethodTopLevelDefaultException() {
-        }
-    }
+  @ErrorHandling(
+      codeSpecific = {
+          @ErrorCodes(codes = {404}, generate = MethodTopLevelAnnotationException.class),},
+      defaultException = MethodTopLevelDefaultException.class)
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface TopLevelMethodErrorHandling {
+  }
 
-    static class TopLevelMethodErrorHandlingException extends Exception {
-        public TopLevelMethodErrorHandlingException() {
-        }
-    }
+  @ErrorHandling(
+      codeSpecific = {
+          @ErrorCodes(codes = {404}, generate = MethodSecondLevelAnnotationException.class),},
+      defaultException = MethodSecondLevelDefaultException.class)
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SecondLevelMethodErrorHandling {
+  }
 
-    static class MethodTopLevelAnnotationException extends Exception {
-        public MethodTopLevelAnnotationException() {
-        }
-    }
+  static class MethodTopLevelDefaultException extends Exception {
+    public MethodTopLevelDefaultException() {}
+  }
 
-    static class MethodSecondLevelDefaultException extends Exception {
-        public MethodSecondLevelDefaultException() {
-        }
-    }
+  static class TopLevelMethodErrorHandlingException extends Exception {
+    public TopLevelMethodErrorHandlingException() {}
+  }
 
-    static class MethodSecondLevelErrorHandlingException extends Exception {
-        public MethodSecondLevelErrorHandlingException() {
-        }
-    }
+  static class MethodTopLevelAnnotationException extends Exception {
+    public MethodTopLevelAnnotationException() {}
+  }
 
-    static class MethodSecondLevelAnnotationException extends Exception {
-        public MethodSecondLevelAnnotationException() {
-        }
-    }
+  static class MethodSecondLevelDefaultException extends Exception {
+    public MethodSecondLevelDefaultException() {}
+  }
+
+  static class MethodSecondLevelErrorHandlingException extends Exception {
+    public MethodSecondLevelErrorHandlingException() {}
+  }
+
+  static class MethodSecondLevelAnnotationException extends Exception {
+    public MethodSecondLevelAnnotationException() {}
+  }
 }

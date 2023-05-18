@@ -23,14 +23,12 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
 import org.junit.Test;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.net.URI;
 import java.util.List;
-
 import static feign.assertj.FeignAssertions.assertThat;
 import static java.util.Arrays.asList;
 import static org.assertj.core.data.MapEntry.entry;
@@ -41,73 +39,73 @@ import static org.assertj.core.data.MapEntry.entry;
  */
 public class JakartaContractTest extends JAXRSContractTestSupport<JakartaContract> {
 
-    @Test
-    public void injectJaxrsInternals() throws Exception {
-        final MethodMetadata methodMetadata =
-                parseAndValidateMetadata(JakartaInternals.class, "inject", AsyncResponse.class,
-                        UriInfo.class);
-        assertThat(methodMetadata.template())
-                .noRequestBody();
+  @Test
+  public void injectJaxrsInternals() throws Exception {
+    final MethodMetadata methodMetadata =
+        parseAndValidateMetadata(JakartaInternals.class, "inject", AsyncResponse.class,
+            UriInfo.class);
+    assertThat(methodMetadata.template())
+        .noRequestBody();
+  }
+
+  @Test
+  public void injectBeanParam() throws Exception {
+    final MethodMetadata methodMetadata =
+        parseAndValidateMetadata(JakartaInternals.class, "beanParameters", BeanParamInput.class);
+    assertThat(methodMetadata.template())
+        .noRequestBody();
+
+    assertThat(methodMetadata.template())
+        .hasHeaders(entry("X-Custom-Header", asList("{X-Custom-Header}")));
+    assertThat(methodMetadata.template())
+        .hasQueries(entry("query", asList("{query}")));
+    assertThat(methodMetadata.formParams())
+        .isNotEmpty()
+        .containsExactly("form");
+
+  }
+
+  public interface JakartaInternals {
+    @GET
+    @Path("/")
+    void inject(@Suspended AsyncResponse ar, @Context UriInfo info);
+
+    @Path("/{path}")
+    @POST
+    void beanParameters(@BeanParam BeanParamInput beanParam);
+
+    public class BeanParamInput {
+
+      @PathParam("path")
+      String path;
+
+      @QueryParam("query")
+      String query;
+
+      @FormParam("form")
+      String form;
+
+      @HeaderParam("X-Custom-Header")
+      String header;
     }
+  }
 
-    @Test
-    public void injectBeanParam() throws Exception {
-        final MethodMetadata methodMetadata =
-                parseAndValidateMetadata(JakartaInternals.class, "beanParameters", BeanParamInput.class);
-        assertThat(methodMetadata.template())
-                .noRequestBody();
+  interface Methods {
 
-        assertThat(methodMetadata.template())
-                .hasHeaders(entry("X-Custom-Header", asList("{X-Custom-Header}")));
-        assertThat(methodMetadata.template())
-                .hasQueries(entry("query", asList("{query}")));
-        assertThat(methodMetadata.formParams())
-                .isNotEmpty()
-                .containsExactly("form");
+    @POST
+    void post();
 
-    }
+    @PUT
+    void put();
 
-    public interface JakartaInternals {
-        @GET
-        @Path("/")
-        void inject(@Suspended AsyncResponse ar, @Context UriInfo info);
+    @GET
+    void get();
 
-        @Path("/{path}")
-        @POST
-        void beanParameters(@BeanParam BeanParamInput beanParam);
+    @DELETE
+    void delete();
+  }
 
-        public class BeanParamInput {
-
-            @PathParam("path")
-            String path;
-
-            @QueryParam("query")
-            String query;
-
-            @FormParam("form")
-            String form;
-
-            @HeaderParam("X-Custom-Header")
-            String header;
-        }
-    }
-
-    interface Methods {
-
-        @POST
-        void post();
-
-        @PUT
-        void put();
-
-        @GET
-        void get();
-
-        @DELETE
-        void delete();
-    }
-
-    interface CustomMethod {
+  interface CustomMethod {
 
         @PATCH
         Response patch();
@@ -119,336 +117,336 @@ public class JakartaContractTest extends JAXRSContractTestSupport<JakartaContrac
         }
     }
 
-    interface WithQueryParamsInPath {
+  interface WithQueryParamsInPath {
 
-        @GET
-        @Path("/")
-        Response none();
-
-        @GET
-        @Path("/?Action=GetUser")
-        Response one();
-
-        @GET
-        @Path("/?Action=GetUser&Version=2010-05-08")
-        Response two();
-
-        @GET
-        @Path("/?Action=GetUser&Version=2010-05-08&limit=1")
-        Response three();
-
-        @GET
-        @Path("/?flag&Action=GetUser&Version=2010-05-08")
-        Response empty();
-    }
-
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_HTML)
-    interface ProducesAndConsumes {
-
-        @GET
-        @Produces("application/xml")
-        Response produces();
-
-        @GET
-        @Produces({"application/xml", "text/plain"})
-        Response producesMultiple();
-
-        @GET
-        @Produces({})
-        Response producesNada();
-
-        @GET
-        @Produces({""})
-        Response producesEmpty();
-
-        @POST
-        @Consumes("application/xml")
-        Response consumes();
-
-        @POST
-        @Consumes({"application/xml", "application/json"})
-        Response consumesMultiple();
-
-        @POST
-        @Consumes({})
-        Response consumesNada();
-
-        @POST
-        @Consumes({""})
-        Response consumesEmpty();
-
-        @POST
-        Response producesAndConsumes();
-    }
-
-    interface BodyParams {
-
-        @POST
-        Response post(List<String> body);
-
-        @POST
-        Response tooMany(List<String> body, List<String> body2);
-    }
-
-    @Path("")
-    interface EmptyPathOnType {
-
-        @GET
-        Response base();
-
-        @GET
-        @Path("/specific")
-        Response get();
-    }
-
-    @Path("/base")
-    interface PathOnType {
-
-        @GET
-        Response base();
-
-        @GET
-        @Path("/specific")
-        Response get();
-
-        @GET
-        @Path("")
-        Response emptyPath();
-
-        @GET
-        @Path("/{param}")
-        Response emptyPathParam(@PathParam(value = "") String empty);
-
-        @GET
-        @Path("/{   param   }")
-        Response pathParamWithSpaces(@PathParam("param") String path);
-
-        @GET
-        @Path("regex/{param:.+}")
-        Response pathParamWithRegex(@PathParam("param") String path);
-
-        @GET
-        @Path("regex/{param1:[0-9]*}/{  param2 : .+}")
-        Response pathParamWithMultipleRegex(
-                @PathParam("param1") String param1,
-                @PathParam("param2") String param2);
-    }
-
-    @Path("/{baseparam: [0-9]+}")
-    interface ComplexPathOnType {
-
-        @GET
-        @Path("regex/{param1:[0-9]*}/{  param2 : .+}")
-        Response pathParamWithMultipleRegex(
-                @PathParam("param1") String param1,
-                @PathParam("param2") String param2);
-    }
-
-    interface WithURIParam {
-
-        @GET
-        @Path("/{1}/{2}")
-        Response uriParam(@PathParam("1") String one, URI endpoint, @PathParam("2") String two);
-    }
-
-    interface WithPathAndQueryParams {
-
-        @GET
-        @Path("/domains/{domainId}/records")
-        Response recordsByNameAndType(
-                @PathParam("domainId") int id,
-                @QueryParam("name") String nameFilter,
-                @QueryParam("type") String typeFilter);
-
-        @GET
-        Response empty(@QueryParam("") String empty);
-    }
-
-    interface FormParams {
-
-        @POST
-        void login(
-                @FormParam("customer_name") String customer,
-                @FormParam("user_name") String user,
-                @FormParam("password") String password);
-
-        @GET
-        Response emptyFormParam(@FormParam("") String empty);
-    }
-
-    interface HeaderParams {
-
-        @POST
-        void logout(@HeaderParam("Auth-Token") String token);
-
-        @GET
-        Response emptyHeaderParam(@HeaderParam("") String empty);
-    }
-
-    @Path("base")
-    interface PathsWithoutAnySlashes {
-
-        @GET
-        @Path("specific")
-        Response get();
-    }
-
-    @Path("/base")
-    interface PathsWithSomeSlashes {
-
-        @GET
-        @Path("specific")
-        Response get();
-    }
-
-    @Path("base")
-    interface PathsWithSomeOtherSlashes {
-
-        @GET
-        @Path("/specific")
-        Response get();
-    }
-
+    @GET
     @Path("/")
-    interface ClassRootPath {
-        @GET
-        @Path("/specific")
-        Response get();
-    }
+    Response none();
 
-    @Path("/base/")
-    interface ClassPathWithTrailingSlash {
-        @GET
-        @Path("/specific")
-        Response get();
-    }
+    @GET
+    @Path("/?Action=GetUser")
+    Response one();
 
-    @Path("/base/")
-    interface MethodWithFirstPathThenGetWithoutLeadingSlash {
-        @Path("specific")
-        @GET
-        Response get();
-    }
+    @GET
+    @Path("/?Action=GetUser&Version=2010-05-08")
+    Response two();
 
-    interface MixedAnnotations {
+    @GET
+    @Path("/?Action=GetUser&Version=2010-05-08&limit=1")
+    Response three();
 
-        @GET
-        @Path("/api/stuff?multiple=stuff")
-        @Produces("application/json")
-        Response getWithHeaders(
-                @HeaderParam("Accept") String accept,
-                @QueryParam("multiple") String multiple,
-                @QueryParam("another") String another);
-    }
+    @GET
+    @Path("/?flag&Action=GetUser&Version=2010-05-08")
+    Response empty();
+  }
 
-    @Override
-    protected JakartaContract createContract() {
-        return new JakartaContract();
-    }
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.TEXT_HTML)
+  interface ProducesAndConsumes {
 
-    @Override
-    protected MethodMetadata parseAndValidateMetadata(
-            Class<?> targetType,
-            String method,
-            Class<?>... parameterTypes)
-            throws NoSuchMethodException {
-        return contract.parseAndValidateMetadata(
-                targetType, targetType.getMethod(method, parameterTypes));
-    }
+    @GET
+    @Produces("application/xml")
+    Response produces();
 
-    @Override
-    protected Class<?> methodsClass() {
-        return Methods.class;
-    }
+    @GET
+    @Produces({"application/xml", "text/plain"})
+    Response producesMultiple();
 
-    @Override
-    protected Class<?> customMethodClass() {
-        return CustomMethod.class;
-    }
+    @GET
+    @Produces({})
+    Response producesNada();
 
-    @Override
-    protected Class<?> withQueryParamsInPathClass() {
-        return WithQueryParamsInPath.class;
-    }
+    @GET
+    @Produces({""})
+    Response producesEmpty();
 
-    @Override
-    protected Class<?> producesAndConsumesClass() {
-        return ProducesAndConsumes.class;
-    }
+    @POST
+    @Consumes("application/xml")
+    Response consumes();
 
-    @Override
-    protected Class<?> bodyParamsClass() {
-        return BodyParams.class;
-    }
+    @POST
+    @Consumes({"application/xml", "application/json"})
+    Response consumesMultiple();
 
-    @Override
-    protected Class<?> emptyPathOnTypeClass() {
-        return EmptyPathOnType.class;
-    }
+    @POST
+    @Consumes({})
+    Response consumesNada();
 
-    @Override
-    protected Class<?> pathOnTypeClass() {
-        return PathOnType.class;
-    }
+    @POST
+    @Consumes({""})
+    Response consumesEmpty();
 
-    @Override
-    protected Class<?> complexPathOnTypeClass() {
-        return ComplexPathOnType.class;
-    }
+    @POST
+    Response producesAndConsumes();
+  }
 
-    @Override
-    protected Class<?> withURIParamClass() {
-        return WithURIParam.class;
-    }
+  interface BodyParams {
 
-    @Override
-    protected Class<?> withPathAndQueryParamsClass() {
-        return WithPathAndQueryParams.class;
-    }
+    @POST
+    Response post(List<String> body);
 
-    @Override
-    protected Class<?> formParamsClass() {
-        return FormParams.class;
-    }
+    @POST
+    Response tooMany(List<String> body, List<String> body2);
+  }
 
-    @Override
-    protected Class<?> headerParamsClass() {
-        return HeaderParams.class;
-    }
+  @Path("")
+  interface EmptyPathOnType {
 
-    @Override
-    protected Class<?> pathsWithoutAnySlashesClass() {
-        return PathsWithoutAnySlashes.class;
-    }
+    @GET
+    Response base();
 
-    @Override
-    protected Class<?> pathsWithSomeSlashesClass() {
-        return PathsWithSomeSlashes.class;
-    }
+    @GET
+    @Path("/specific")
+    Response get();
+  }
 
-    @Override
-    protected Class<?> pathsWithSomeOtherSlashesClass() {
-        return PathsWithSomeOtherSlashes.class;
-    }
+  @Path("/base")
+  interface PathOnType {
 
-    @Override
-    protected Class<?> classRootPathClass() {
-        return ClassRootPath.class;
-    }
+    @GET
+    Response base();
 
-    @Override
-    protected Class<?> classPathWithTrailingSlashClass() {
-        return ClassPathWithTrailingSlash.class;
-    }
+    @GET
+    @Path("/specific")
+    Response get();
 
-    @Override
-    protected Class<?> methodWithFirstPathThenGetWithoutLeadingSlashClass() {
-        return MethodWithFirstPathThenGetWithoutLeadingSlash.class;
-    }
+    @GET
+    @Path("")
+    Response emptyPath();
 
-    @Override
-    protected Class<?> mixedAnnotationsClass() {
-        return MixedAnnotations.class;
-    }
+    @GET
+    @Path("/{param}")
+    Response emptyPathParam(@PathParam(value = "") String empty);
+
+    @GET
+    @Path("/{   param   }")
+    Response pathParamWithSpaces(@PathParam("param") String path);
+
+    @GET
+    @Path("regex/{param:.+}")
+    Response pathParamWithRegex(@PathParam("param") String path);
+
+    @GET
+    @Path("regex/{param1:[0-9]*}/{  param2 : .+}")
+    Response pathParamWithMultipleRegex(
+                                        @PathParam("param1") String param1,
+                                        @PathParam("param2") String param2);
+  }
+
+  @Path("/{baseparam: [0-9]+}")
+  interface ComplexPathOnType {
+
+    @GET
+    @Path("regex/{param1:[0-9]*}/{  param2 : .+}")
+    Response pathParamWithMultipleRegex(
+                                        @PathParam("param1") String param1,
+                                        @PathParam("param2") String param2);
+  }
+
+  interface WithURIParam {
+
+    @GET
+    @Path("/{1}/{2}")
+    Response uriParam(@PathParam("1") String one, URI endpoint, @PathParam("2") String two);
+  }
+
+  interface WithPathAndQueryParams {
+
+    @GET
+    @Path("/domains/{domainId}/records")
+    Response recordsByNameAndType(
+                                  @PathParam("domainId") int id,
+                                  @QueryParam("name") String nameFilter,
+                                  @QueryParam("type") String typeFilter);
+
+    @GET
+    Response empty(@QueryParam("") String empty);
+  }
+
+  interface FormParams {
+
+    @POST
+    void login(
+               @FormParam("customer_name") String customer,
+               @FormParam("user_name") String user,
+               @FormParam("password") String password);
+
+    @GET
+    Response emptyFormParam(@FormParam("") String empty);
+  }
+
+  interface HeaderParams {
+
+    @POST
+    void logout(@HeaderParam("Auth-Token") String token);
+
+    @GET
+    Response emptyHeaderParam(@HeaderParam("") String empty);
+  }
+
+  @Path("base")
+  interface PathsWithoutAnySlashes {
+
+    @GET
+    @Path("specific")
+    Response get();
+  }
+
+  @Path("/base")
+  interface PathsWithSomeSlashes {
+
+    @GET
+    @Path("specific")
+    Response get();
+  }
+
+  @Path("base")
+  interface PathsWithSomeOtherSlashes {
+
+    @GET
+    @Path("/specific")
+    Response get();
+  }
+
+  @Path("/")
+  interface ClassRootPath {
+    @GET
+    @Path("/specific")
+    Response get();
+  }
+
+  @Path("/base/")
+  interface ClassPathWithTrailingSlash {
+    @GET
+    @Path("/specific")
+    Response get();
+  }
+
+  @Path("/base/")
+  interface MethodWithFirstPathThenGetWithoutLeadingSlash {
+    @Path("specific")
+    @GET
+    Response get();
+  }
+
+  interface MixedAnnotations {
+
+    @GET
+    @Path("/api/stuff?multiple=stuff")
+    @Produces("application/json")
+    Response getWithHeaders(
+                            @HeaderParam("Accept") String accept,
+                            @QueryParam("multiple") String multiple,
+                            @QueryParam("another") String another);
+  }
+
+  @Override
+  protected JakartaContract createContract() {
+    return new JakartaContract();
+  }
+
+  @Override
+  protected MethodMetadata parseAndValidateMetadata(
+                                                    Class<?> targetType,
+                                                    String method,
+                                                    Class<?>... parameterTypes)
+      throws NoSuchMethodException {
+    return contract.parseAndValidateMetadata(
+        targetType, targetType.getMethod(method, parameterTypes));
+  }
+
+  @Override
+  protected Class<?> methodsClass() {
+    return Methods.class;
+  }
+
+  @Override
+  protected Class<?> customMethodClass() {
+    return CustomMethod.class;
+  }
+
+  @Override
+  protected Class<?> withQueryParamsInPathClass() {
+    return WithQueryParamsInPath.class;
+  }
+
+  @Override
+  protected Class<?> producesAndConsumesClass() {
+    return ProducesAndConsumes.class;
+  }
+
+  @Override
+  protected Class<?> bodyParamsClass() {
+    return BodyParams.class;
+  }
+
+  @Override
+  protected Class<?> emptyPathOnTypeClass() {
+    return EmptyPathOnType.class;
+  }
+
+  @Override
+  protected Class<?> pathOnTypeClass() {
+    return PathOnType.class;
+  }
+
+  @Override
+  protected Class<?> complexPathOnTypeClass() {
+    return ComplexPathOnType.class;
+  }
+
+  @Override
+  protected Class<?> withURIParamClass() {
+    return WithURIParam.class;
+  }
+
+  @Override
+  protected Class<?> withPathAndQueryParamsClass() {
+    return WithPathAndQueryParams.class;
+  }
+
+  @Override
+  protected Class<?> formParamsClass() {
+    return FormParams.class;
+  }
+
+  @Override
+  protected Class<?> headerParamsClass() {
+    return HeaderParams.class;
+  }
+
+  @Override
+  protected Class<?> pathsWithoutAnySlashesClass() {
+    return PathsWithoutAnySlashes.class;
+  }
+
+  @Override
+  protected Class<?> pathsWithSomeSlashesClass() {
+    return PathsWithSomeSlashes.class;
+  }
+
+  @Override
+  protected Class<?> pathsWithSomeOtherSlashesClass() {
+    return PathsWithSomeOtherSlashes.class;
+  }
+
+  @Override
+  protected Class<?> classRootPathClass() {
+    return ClassRootPath.class;
+  }
+
+  @Override
+  protected Class<?> classPathWithTrailingSlashClass() {
+    return ClassPathWithTrailingSlash.class;
+  }
+
+  @Override
+  protected Class<?> methodWithFirstPathThenGetWithoutLeadingSlashClass() {
+    return MethodWithFirstPathThenGetWithoutLeadingSlash.class;
+  }
+
+  @Override
+  protected Class<?> mixedAnnotationsClass() {
+    return MixedAnnotations.class;
+  }
 }

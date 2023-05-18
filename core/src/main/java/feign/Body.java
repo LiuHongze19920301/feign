@@ -16,7 +16,6 @@ package feign;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Map;
-
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -39,5 +38,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Body {
 
-    String value();
+  String value();
 }

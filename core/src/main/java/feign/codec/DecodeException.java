@@ -15,7 +15,6 @@ package feign.codec;
 
 import feign.FeignException;
 import feign.Request;
-
 import static feign.Util.checkNotNull;
 
 /**
@@ -25,20 +24,20 @@ import static feign.Util.checkNotNull;
  */
 public class DecodeException extends FeignException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * @param message the reason for the failure.
-     */
-    public DecodeException(int status, String message, Request request) {
-        super(status, checkNotNull(message, "message"), request);
-    }
+  /**
+   * @param message the reason for the failure.
+   */
+  public DecodeException(int status, String message, Request request) {
+    super(status, checkNotNull(message, "message"), request);
+  }
 
-    /**
-     * @param message possibly null reason for the failure.
-     * @param cause   the cause of the error.
-     */
-    public DecodeException(int status, String message, Request request, Throwable cause) {
-        super(status, message, request, checkNotNull(cause, "cause"));
-    }
+  /**
+   * @param message possibly null reason for the failure.
+   * @param cause the cause of the error.
+   */
+  public DecodeException(int status, String message, Request request, Throwable cause) {
+    super(status, message, request, checkNotNull(cause, "cause"));
+  }
 }

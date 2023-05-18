@@ -49,8 +49,8 @@ package feign;
  */
 public interface RequestInterceptor {
 
-    /**
-     * Called for every request. Add data using methods on the supplied {@link RequestTemplate}.
-     */
-    void apply(RequestTemplate template);
+  /**
+   * Called for every request. Add data using methods on the supplied {@link RequestTemplate}.
+   */
+  void apply(RequestTemplate template);
 }

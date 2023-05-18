@@ -22,15 +22,12 @@ import feign.Util;
 import feign.assertj.MockWebServerAssertions;
 import feign.client.AbstractClientTest;
 import feign.Feign;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-
 import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.data.MapEntry;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 
@@ -39,104 +36,104 @@ import static org.junit.Assume.assumeFalse;
  */
 public class OkHttpClientTest extends AbstractClientTest {
 
-    @Override
-    public Builder newBuilder() {
-        return Feign.builder().client(new OkHttpClient());
-    }
+  @Override
+  public Builder newBuilder() {
+    return Feign.builder().client(new OkHttpClient());
+  }
 
 
-    @Test
-    public void testContentTypeWithoutCharset() throws Exception {
-        server.enqueue(new MockResponse()
-                .setBody("AAAAAAAA"));
-        OkHttpClientTestInterface api = newBuilder()
-                .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
+  @Test
+  public void testContentTypeWithoutCharset() throws Exception {
+    server.enqueue(new MockResponse()
+        .setBody("AAAAAAAA"));
+    OkHttpClientTestInterface api = newBuilder()
+        .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
 
-        Response response = api.getWithContentType();
-        // Response length should not be null
-        assertEquals("AAAAAAAA", Util.toString(response.body().asReader(Util.UTF_8)));
+    Response response = api.getWithContentType();
+    // Response length should not be null
+    assertEquals("AAAAAAAA", Util.toString(response.body().asReader(Util.UTF_8)));
 
-        MockWebServerAssertions.assertThat(server.takeRequest())
-                .hasHeaders(
-                        MapEntry.entry("Accept", Collections.singletonList("text/plain")),
-                        MapEntry.entry("Content-Type", Collections.singletonList("text/plain")))
-                .hasMethod("GET");
-    }
-
-
-    @Test
-    public void testNoFollowRedirect() throws Exception {
-        server.enqueue(
-                new MockResponse().setResponseCode(302).addHeader("Location", server.url("redirect")));
-        // Enqueue a response to fail fast if the redirect is followed, instead of waiting for the
-        // timeout
-        server.enqueue(new MockResponse().setBody("Hello"));
-
-        OkHttpClientTestInterface api = newBuilder()
-                // Use the same connect and read timeouts as the OkHttp default
-                .options(new Request.Options(10_000, TimeUnit.MILLISECONDS, 10_000, TimeUnit.MILLISECONDS,
-                        false))
-                .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
-
-        Response response = api.get();
-        // Response length should not be null
-        assertEquals(302, response.status());
-        assertEquals(server.url("redirect").toString(),
-                response.headers().get("Location").iterator().next());
-
-    }
+    MockWebServerAssertions.assertThat(server.takeRequest())
+        .hasHeaders(
+            MapEntry.entry("Accept", Collections.singletonList("text/plain")),
+            MapEntry.entry("Content-Type", Collections.singletonList("text/plain")))
+        .hasMethod("GET");
+  }
 
 
-    @Test
-    public void testFollowRedirect() throws Exception {
-        String expectedBody = "Hello";
+  @Test
+  public void testNoFollowRedirect() throws Exception {
+    server.enqueue(
+        new MockResponse().setResponseCode(302).addHeader("Location", server.url("redirect")));
+    // Enqueue a response to fail fast if the redirect is followed, instead of waiting for the
+    // timeout
+    server.enqueue(new MockResponse().setBody("Hello"));
 
-        server.enqueue(
-                new MockResponse().setResponseCode(302).addHeader("Location", server.url("redirect")));
-        server.enqueue(new MockResponse().setBody(expectedBody));
+    OkHttpClientTestInterface api = newBuilder()
+        // Use the same connect and read timeouts as the OkHttp default
+        .options(new Request.Options(10_000, TimeUnit.MILLISECONDS, 10_000, TimeUnit.MILLISECONDS,
+            false))
+        .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
 
-        OkHttpClientTestInterface api = newBuilder()
-                // Use the same connect and read timeouts as the OkHttp default
-                .options(new Request.Options(10_000, TimeUnit.MILLISECONDS, 10_000, TimeUnit.MILLISECONDS,
-                        true))
-                .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
+    Response response = api.get();
+    // Response length should not be null
+    assertEquals(302, response.status());
+    assertEquals(server.url("redirect").toString(),
+        response.headers().get("Location").iterator().next());
 
-        Response response = api.get();
-        // Response length should not be null
-        assertEquals(200, response.status());
-        String payload = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
-        assertEquals(expectedBody, payload);
+  }
 
-    }
 
-    /*
-     * OkHTTP does not support gzip and deflate compression out-of-the-box. But you can add an
-     * interceptor that implies it, see
-     * https://stackoverflow.com/questions/51901333/okhttp-3-how-to-decompress-gzip-deflate-response-
-     * manually-using-java-android
-     */
-    @Override
-    public void canSupportGzip() throws Exception {
-        assumeFalse("OkHTTP client do not support gzip compression", false);
-    }
+  @Test
+  public void testFollowRedirect() throws Exception {
+    String expectedBody = "Hello";
 
-    @Override
-    public void canSupportDeflate() throws Exception {
-        assumeFalse("OkHTTP client do not support deflate compression", false);
-    }
+    server.enqueue(
+        new MockResponse().setResponseCode(302).addHeader("Location", server.url("redirect")));
+    server.enqueue(new MockResponse().setBody(expectedBody));
 
-    @Override
-    public void canExceptCaseInsensitiveHeader() throws Exception {
-        assumeFalse("OkHTTP client do not support gzip compression", false);
-    }
+    OkHttpClientTestInterface api = newBuilder()
+        // Use the same connect and read timeouts as the OkHttp default
+        .options(new Request.Options(10_000, TimeUnit.MILLISECONDS, 10_000, TimeUnit.MILLISECONDS,
+            true))
+        .target(OkHttpClientTestInterface.class, "http://localhost:" + server.getPort());
 
-    public interface OkHttpClientTestInterface {
+    Response response = api.get();
+    // Response length should not be null
+    assertEquals(200, response.status());
+    String payload = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
+    assertEquals(expectedBody, payload);
 
-        @RequestLine("GET /")
-        @Headers({"Accept: text/plain", "Content-Type: text/plain"})
-        Response getWithContentType();
+  }
 
-        @RequestLine("GET /")
-        Response get();
-    }
+  /*
+   * OkHTTP does not support gzip and deflate compression out-of-the-box. But you can add an
+   * interceptor that implies it, see
+   * https://stackoverflow.com/questions/51901333/okhttp-3-how-to-decompress-gzip-deflate-response-
+   * manually-using-java-android
+   */
+  @Override
+  public void canSupportGzip() throws Exception {
+    assumeFalse("OkHTTP client do not support gzip compression", false);
+  }
+
+  @Override
+  public void canSupportDeflate() throws Exception {
+    assumeFalse("OkHTTP client do not support deflate compression", false);
+  }
+
+  @Override
+  public void canExceptCaseInsensitiveHeader() throws Exception {
+    assumeFalse("OkHTTP client do not support gzip compression", false);
+  }
+
+  public interface OkHttpClientTestInterface {
+
+    @RequestLine("GET /")
+    @Headers({"Accept: text/plain", "Content-Type: text/plain"})
+    Response getWithContentType();
+
+    @RequestLine("GET /")
+    Response get();
+  }
 }

@@ -14,24 +14,23 @@
 package feign.metrics5;
 
 import java.util.concurrent.TimeUnit;
-
 import io.dropwizard.metrics5.*;
 import io.dropwizard.metrics5.MetricRegistry.MetricSupplier;
 
 public class MetricSuppliers {
 
-    public MetricSupplier<Timer> timers() {
-        // only keep timer data for 1 minute
-        return () -> new Timer(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
-    }
+  public MetricSupplier<Timer> timers() {
+    // only keep timer data for 1 minute
+    return () -> new Timer(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
+  }
 
-    public MetricSupplier<Meter> meters() {
-        return () -> new Meter();
-    }
+  public MetricSupplier<Meter> meters() {
+    return () -> new Meter();
+  }
 
-    public MetricSupplier<Histogram> histograms() {
-        // only keep timer data for 1 minute
-        return () -> new Histogram(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
-    }
+  public MetricSupplier<Histogram> histograms() {
+    // only keep timer data for 1 minute
+    return () -> new Histogram(new SlidingTimeWindowArrayReservoir(1, TimeUnit.MINUTES));
+  }
 
 }

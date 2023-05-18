@@ -20,14 +20,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
-
 import org.junit.Before;
 import org.junit.Test;
 import feign.Body;
@@ -43,134 +41,134 @@ import feign.gson.GsonDecoder;
 
 public class MockClientSequentialTest {
 
-    interface GitHub {
+  interface GitHub {
 
-        @Headers({"Name: {owner}"})
-        @RequestLine("GET /repos/{owner}/{repo}/contributors")
-        List<Contributor> contributors(@Param("owner") String owner, @Param("repo") String repo);
+    @Headers({"Name: {owner}"})
+    @RequestLine("GET /repos/{owner}/{repo}/contributors")
+    List<Contributor> contributors(@Param("owner") String owner, @Param("repo") String repo);
 
-        @RequestLine("GET /repos/{owner}/{repo}/contributors?client_id={client_id}")
-        List<Contributor> contributors(@Param("client_id") String clientId,
-                                       @Param("owner") String owner,
-                                       @Param("repo") String repo);
+    @RequestLine("GET /repos/{owner}/{repo}/contributors?client_id={client_id}")
+    List<Contributor> contributors(@Param("client_id") String clientId,
+                                   @Param("owner") String owner,
+                                   @Param("repo") String repo);
 
-        @RequestLine("PATCH /repos/{owner}/{repo}/contributors")
-        List<Contributor> patchContributors(@Param("owner") String owner, @Param("repo") String repo);
+    @RequestLine("PATCH /repos/{owner}/{repo}/contributors")
+    List<Contributor> patchContributors(@Param("owner") String owner, @Param("repo") String repo);
 
-        @RequestLine("POST /repos/{owner}/{repo}/contributors")
-        @Body("%7B\"login\":\"{login}\",\"type\":\"{type}\"%7D")
-        Contributor create(@Param("owner") String owner,
-                           @Param("repo") String repo,
-                           @Param("login") String login,
-                           @Param("type") String type);
+    @RequestLine("POST /repos/{owner}/{repo}/contributors")
+    @Body("%7B\"login\":\"{login}\",\"type\":\"{type}\"%7D")
+    Contributor create(@Param("owner") String owner,
+                       @Param("repo") String repo,
+                       @Param("login") String login,
+                       @Param("type") String type);
 
+  }
+
+  static class Contributor {
+
+    String login;
+
+    int contributions;
+
+  }
+
+  class AssertionDecoder implements Decoder {
+
+    private final Decoder delegate;
+
+    public AssertionDecoder(Decoder delegate) {
+      this.delegate = delegate;
     }
 
-    static class Contributor {
+    @Override
+    public Object decode(Response response, Type type)
+        throws IOException, DecodeException, FeignException {
+      assertThat(response.request(), notNullValue());
 
-        String login;
-
-        int contributions;
-
+      return delegate.decode(response, type);
     }
 
-    class AssertionDecoder implements Decoder {
+  }
 
-        private final Decoder delegate;
+  private GitHub githubSequential;
+  private MockClient mockClientSequential;
 
-        public AssertionDecoder(Decoder delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Object decode(Response response, Type type)
-                throws IOException, DecodeException, FeignException {
-            assertThat(response.request(), notNullValue());
-
-            return delegate.decode(response, type);
-        }
-
+  @Before
+  public void setup() throws IOException {
+    try (InputStream input = getClass().getResourceAsStream("/fixtures/contributors.json")) {
+      byte[] data = toByteArray(input);
+      RequestHeaders headers = RequestHeaders
+          .builder()
+          .add("Name", "netflix")
+          .build();
+      mockClientSequential = new MockClient(true);
+      githubSequential = Feign.builder().decoder(new AssertionDecoder(new GsonDecoder()))
+          .client(mockClientSequential
+              .add(RequestKey
+                  .builder(HttpMethod.GET, "/repos/netflix/feign/contributors")
+                  .headers(headers).build(), HttpsURLConnection.HTTP_OK, data)
+              .add(HttpMethod.GET, "/repos/netflix/feign/contributors?client_id=55",
+                  HttpsURLConnection.HTTP_NOT_FOUND)
+              .add(HttpMethod.GET, "/repos/netflix/feign/contributors?client_id=7 7",
+                  HttpsURLConnection.HTTP_INTERNAL_ERROR, new ByteArrayInputStream(data))
+              .add(HttpMethod.GET, "/repos/netflix/feign/contributors",
+                  Response.builder().status(HttpsURLConnection.HTTP_OK)
+                      .headers(RequestHeaders.EMPTY).body(data)))
+          .target(new MockTarget<>(GitHub.class));
     }
+  }
 
-    private GitHub githubSequential;
-    private MockClient mockClientSequential;
-
-    @Before
-    public void setup() throws IOException {
-        try (InputStream input = getClass().getResourceAsStream("/fixtures/contributors.json")) {
-            byte[] data = toByteArray(input);
-            RequestHeaders headers = RequestHeaders
-                    .builder()
-                    .add("Name", "netflix")
-                    .build();
-            mockClientSequential = new MockClient(true);
-            githubSequential = Feign.builder().decoder(new AssertionDecoder(new GsonDecoder()))
-                    .client(mockClientSequential
-                            .add(RequestKey
-                                    .builder(HttpMethod.GET, "/repos/netflix/feign/contributors")
-                                    .headers(headers).build(), HttpsURLConnection.HTTP_OK, data)
-                            .add(HttpMethod.GET, "/repos/netflix/feign/contributors?client_id=55",
-                                    HttpsURLConnection.HTTP_NOT_FOUND)
-                            .add(HttpMethod.GET, "/repos/netflix/feign/contributors?client_id=7 7",
-                                    HttpsURLConnection.HTTP_INTERNAL_ERROR, new ByteArrayInputStream(data))
-                            .add(HttpMethod.GET, "/repos/netflix/feign/contributors",
-                                    Response.builder().status(HttpsURLConnection.HTTP_OK)
-                                            .headers(RequestHeaders.EMPTY).body(data)))
-                    .target(new MockTarget<>(GitHub.class));
-        }
+  @Test
+  public void sequentialRequests() throws Exception {
+    githubSequential.contributors("netflix", "feign");
+    try {
+      githubSequential.contributors("55", "netflix", "feign");
+      fail();
+    } catch (FeignException e) {
+      assertThat(e.status(), equalTo(HttpsURLConnection.HTTP_NOT_FOUND));
     }
-
-    @Test
-    public void sequentialRequests() throws Exception {
-        githubSequential.contributors("netflix", "feign");
-        try {
-            githubSequential.contributors("55", "netflix", "feign");
-            fail();
-        } catch (FeignException e) {
-            assertThat(e.status(), equalTo(HttpsURLConnection.HTTP_NOT_FOUND));
-        }
-        try {
-            githubSequential.contributors("7 7", "netflix", "feign");
-            fail();
-        } catch (FeignException e) {
-            assertThat(e.status(), equalTo(HttpsURLConnection.HTTP_INTERNAL_ERROR));
-        }
-        githubSequential.contributors("netflix", "feign");
-
-        mockClientSequential.verifyStatus();
+    try {
+      githubSequential.contributors("7 7", "netflix", "feign");
+      fail();
+    } catch (FeignException e) {
+      assertThat(e.status(), equalTo(HttpsURLConnection.HTTP_INTERNAL_ERROR));
     }
+    githubSequential.contributors("netflix", "feign");
 
-    @Test
-    public void sequentialRequestsCalledTooLess() throws Exception {
-        githubSequential.contributors("netflix", "feign");
-        try {
-            mockClientSequential.verifyStatus();
-            fail();
-        } catch (VerificationAssertionError e) {
-            assertThat(e.getMessage(), startsWith("More executions"));
-        }
+    mockClientSequential.verifyStatus();
+  }
+
+  @Test
+  public void sequentialRequestsCalledTooLess() throws Exception {
+    githubSequential.contributors("netflix", "feign");
+    try {
+      mockClientSequential.verifyStatus();
+      fail();
+    } catch (VerificationAssertionError e) {
+      assertThat(e.getMessage(), startsWith("More executions"));
     }
+  }
 
-    @Test
-    public void sequentialRequestsCalledTooMany() throws Exception {
-        sequentialRequests();
+  @Test
+  public void sequentialRequestsCalledTooMany() throws Exception {
+    sequentialRequests();
 
-        try {
-            githubSequential.contributors("netflix", "feign");
-            fail();
-        } catch (VerificationAssertionError e) {
-            assertThat(e.getMessage(), containsString("excessive"));
-        }
+    try {
+      githubSequential.contributors("netflix", "feign");
+      fail();
+    } catch (VerificationAssertionError e) {
+      assertThat(e.getMessage(), containsString("excessive"));
     }
+  }
 
-    @Test
-    public void sequentialRequestsInWrongOrder() throws Exception {
-        try {
-            githubSequential.contributors("7 7", "netflix", "feign");
-            fail();
-        } catch (VerificationAssertionError e) {
-            assertThat(e.getMessage(), startsWith("Expected: \nRequest ["));
-        }
+  @Test
+  public void sequentialRequestsInWrongOrder() throws Exception {
+    try {
+      githubSequential.contributors("7 7", "netflix", "feign");
+      fail();
+    } catch (VerificationAssertionError e) {
+      assertThat(e.getMessage(), startsWith("Expected: \nRequest ["));
     }
+  }
 
 }

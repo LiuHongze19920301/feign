@@ -14,10 +14,8 @@
 package feign.example.wikipedia;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.io.File;
 import java.util.Arrays;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.hamcrest.CoreMatchers;
@@ -28,20 +26,20 @@ import org.junit.Test;
  */
 public class WikipediaExampleIT {
 
-    @Test
-    public void runMain() throws Exception {
-        final String jar = Arrays.stream(new File("target").listFiles())
-                .filter(file -> file.getName().startsWith("feign-example-wikipedia-with-springboot")
-                        && file.getName().endsWith(".jar"))
-                .findFirst()
-                .map(File::getAbsolutePath)
-                .get();
+  @Test
+  public void runMain() throws Exception {
+    final String jar = Arrays.stream(new File("target").listFiles())
+        .filter(file -> file.getName().startsWith("feign-example-wikipedia-with-springboot")
+            && file.getName().endsWith(".jar"))
+        .findFirst()
+        .map(File::getAbsolutePath)
+        .get();
 
-        final String line = "java -jar " + jar;
-        final CommandLine cmdLine = CommandLine.parse(line);
-        final int exitValue = new DefaultExecutor().execute(cmdLine);
+    final String line = "java -jar " + jar;
+    final CommandLine cmdLine = CommandLine.parse(line);
+    final int exitValue = new DefaultExecutor().execute(cmdLine);
 
-        assertThat(exitValue, CoreMatchers.equalTo(0));
-    }
+    assertThat(exitValue, CoreMatchers.equalTo(0));
+  }
 
 }

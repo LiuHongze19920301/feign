@@ -21,31 +21,31 @@ import javax.xml.bind.JAXBException;
  */
 public enum JAXBContextInstantationMode {
 
-    CLASS {
-        @Override
-        JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz) {
-            return new JAXBContextClassCacheKey(clazz);
-        }
+  CLASS {
+    @Override
+    JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz) {
+      return new JAXBContextClassCacheKey(clazz);
+    }
 
-        @Override
-        JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException {
-            return JAXBContext.newInstance(clazz);
-        }
-    },
+    @Override
+    JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException {
+      return JAXBContext.newInstance(clazz);
+    }
+  },
 
-    PACKAGE {
-        @Override
-        JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz) {
-            return new JAXBContextPackageCacheKey(clazz.getPackage().getName(), clazz.getClassLoader());
-        }
+  PACKAGE {
+    @Override
+    JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz) {
+      return new JAXBContextPackageCacheKey(clazz.getPackage().getName(), clazz.getClassLoader());
+    }
 
-        @Override
-        JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException {
-            return JAXBContext.newInstance(clazz.getPackage().getName(), clazz.getClassLoader());
-        }
-    };
+    @Override
+    JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException {
+      return JAXBContext.newInstance(clazz.getPackage().getName(), clazz.getClassLoader());
+    }
+  };
 
-    abstract JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz);
+  abstract JAXBContextCacheKey getJAXBContextCacheKey(Class<?> clazz);
 
-    abstract JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException;
+  abstract JAXBContext getJAXBContext(Class<?> clazz) throws JAXBException;
 }

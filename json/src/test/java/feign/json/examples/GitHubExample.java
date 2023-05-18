@@ -22,8 +22,8 @@ import org.json.JSONObject;
 
 interface GitHub {
 
-    @RequestLine("GET /repos/{owner}/{repo}/contributors")
-    JSONArray contributors(@Param("owner") String owner, @Param("repo") String repo);
+  @RequestLine("GET /repos/{owner}/{repo}/contributors")
+  JSONArray contributors(@Param("owner") String owner, @Param("repo") String repo);
 
 }
 
@@ -33,16 +33,16 @@ interface GitHub {
  */
 public class GitHubExample {
 
-    public static void main(String... args) {
-        GitHub github = Feign.builder()
-                .decoder(new JsonDecoder())
-                .target(GitHub.class, "https://api.github.com");
+  public static void main(String... args) {
+    GitHub github = Feign.builder()
+        .decoder(new JsonDecoder())
+        .target(GitHub.class, "https://api.github.com");
 
-        System.out.println("Let's fetch and print a list of the contributors to this library.");
-        JSONArray contributors = github.contributors("netflix", "feign");
-        contributors.forEach(contributor -> {
-            System.out.println(((JSONObject) contributor).getString("login"));
-        });
-    }
+    System.out.println("Let's fetch and print a list of the contributors to this library.");
+    JSONArray contributors = github.contributors("netflix", "feign");
+    contributors.forEach(contributor -> {
+      System.out.println(((JSONObject) contributor).getString("login"));
+    });
+  }
 
 }

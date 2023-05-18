@@ -14,29 +14,28 @@
 package feign.utils;
 
 import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExceptionUtilsTest {
-    @Test
-    public void rootCauseOfNullIsNull() {
-        Throwable e = null;
-        Throwable rootCause = ExceptionUtils.getRootCause(e);
-        assertThat(rootCause).isNull();
-    }
+  @Test
+  public void rootCauseOfNullIsNull() {
+    Throwable e = null;
+    Throwable rootCause = ExceptionUtils.getRootCause(e);
+    assertThat(rootCause).isNull();
+  }
 
-    @Test
-    public void rootCauseIsSelf() {
-        Throwable e = new Exception();
-        Throwable rootCause = ExceptionUtils.getRootCause(e);
-        assertThat(rootCause).isSameAs(e);
-    }
+  @Test
+  public void rootCauseIsSelf() {
+    Throwable e = new Exception();
+    Throwable rootCause = ExceptionUtils.getRootCause(e);
+    assertThat(rootCause).isSameAs(e);
+  }
 
-    @Test
-    public void rootCauseIsDifferent() {
-        Throwable rootCause = new Exception();
-        Throwable e = new Exception(rootCause);
-        Throwable actualRootCause = ExceptionUtils.getRootCause(e);
-        assertThat(actualRootCause).isSameAs(rootCause);
-    }
+  @Test
+  public void rootCauseIsDifferent() {
+    Throwable rootCause = new Exception();
+    Throwable e = new Exception(rootCause);
+    Throwable actualRootCause = ExceptionUtils.getRootCause(e);
+    assertThat(actualRootCause).isSameAs(rootCause);
+  }
 }

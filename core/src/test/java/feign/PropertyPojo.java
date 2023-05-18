@@ -15,36 +15,36 @@ package feign;
 
 public class PropertyPojo {
 
-    private String name;
+  private String name;
 
-    public static class ChildPojoClass extends PropertyPojo {
-        private Integer number;
+  public static class ChildPojoClass extends PropertyPojo {
+    private Integer number;
 
-        private String privateGetterProperty;
+    private String privateGetterProperty;
 
-        public Integer getNumber() {
-            return number;
-        }
-
-        public void setNumber(Integer number) {
-            this.number = number;
-        }
-
-        public void setPrivateGetterProperty(String privateGetterProperty) {
-            this.privateGetterProperty = privateGetterProperty;
-        }
-
-        private String getPrivateGetterProperty() {
-            return privateGetterProperty;
-        }
+    public Integer getNumber() {
+      return number;
     }
 
-    public String getName() {
-        return name;
+    public void setNumber(Integer number) {
+      this.number = number;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPrivateGetterProperty(String privateGetterProperty) {
+      this.privateGetterProperty = privateGetterProperty;
     }
+
+    private String getPrivateGetterProperty() {
+      return privateGetterProperty;
+    }
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
 
 }

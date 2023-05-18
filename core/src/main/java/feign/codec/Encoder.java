@@ -14,10 +14,8 @@
 package feign.codec;
 
 import java.lang.reflect.Type;
-
 import feign.RequestTemplate;
 import feign.Util;
-
 import static java.lang.String.format;
 
 /**
@@ -66,37 +64,37 @@ import static java.lang.String.format;
  * </pre>
  */
 public interface Encoder {
-    /**
-     * Type literal for {@code Map<String, ?>}, indicating the object to encode is a form.
-     */
-    Type MAP_STRING_WILDCARD = Util.MAP_STRING_WILDCARD;
+  /**
+   * Type literal for {@code Map<String, ?>}, indicating the object to encode is a form.
+   */
+  Type MAP_STRING_WILDCARD = Util.MAP_STRING_WILDCARD;
 
-    /**
-     * Converts objects to an appropriate representation in the template.
-     *
-     * @param object   what to encode as the request body.
-     * @param bodyType the type the object should be encoded as. {@link #MAP_STRING_WILDCARD}
-     *                 indicates form encoding.
-     * @param template the request template to populate.
-     * @throws EncodeException when encoding failed due to a checked exception.
-     */
-    void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException;
+  /**
+   * Converts objects to an appropriate representation in the template.
+   *
+   * @param object what to encode as the request body.
+   * @param bodyType the type the object should be encoded as. {@link #MAP_STRING_WILDCARD}
+   *        indicates form encoding.
+   * @param template the request template to populate.
+   * @throws EncodeException when encoding failed due to a checked exception.
+   */
+  void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException;
 
-    /**
-     * Default implementation of {@code Encoder}.
-     */
-    class Default implements Encoder {
+  /**
+   * Default implementation of {@code Encoder}.
+   */
+  class Default implements Encoder {
 
-        @Override
-        public void encode(Object object, Type bodyType, RequestTemplate template) {
-            if (bodyType == String.class) {
-                template.body(object.toString());
-            } else if (bodyType == byte[].class) {
-                template.body((byte[]) object, null);
-            } else if (object != null) {
-                throw new EncodeException(
-                        format("%s is not a type supported by this encoder.", object.getClass()));
-            }
-        }
+    @Override
+    public void encode(Object object, Type bodyType, RequestTemplate template) {
+      if (bodyType == String.class) {
+        template.body(object.toString());
+      } else if (bodyType == byte[].class) {
+        template.body((byte[]) object, null);
+      } else if (object != null) {
+        throw new EncodeException(
+            format("%s is not a type supported by this encoder.", object.getClass()));
+      }
     }
+  }
 }

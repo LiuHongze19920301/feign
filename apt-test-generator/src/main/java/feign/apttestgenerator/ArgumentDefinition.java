@@ -15,13 +15,13 @@ package feign.apttestgenerator;
 
 public class ArgumentDefinition {
 
-    public final String name;
-    public final String type;
+  public final String name;
+  public final String type;
 
-    public ArgumentDefinition(String name, String type) {
-        super();
-        this.name = name;
-        this.type = type;
-    }
+  public ArgumentDefinition(String name, String type) {
+    super();
+    this.name = name;
+    this.type = type;
+  }
 
 }
