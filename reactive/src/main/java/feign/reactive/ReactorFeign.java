@@ -61,7 +61,7 @@ public class ReactorFeign extends ReactiveFeign {
     }
 
     @Override
-    public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+    public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
       return new ReactorInvocationHandler(target, dispatch, scheduler);
     }
   }

@@ -23,5 +23,5 @@ import java.util.concurrent.CompletableFuture;
  */
 @Experimental
 public interface MethodInfoResolver {
-    MethodInfo resolve(Class<?> targetType, Method method);
+  MethodInfo resolve(Class<?> targetType, Method method);
 }

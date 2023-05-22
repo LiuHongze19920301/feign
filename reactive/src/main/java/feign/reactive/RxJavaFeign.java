@@ -58,7 +58,7 @@ public class RxJavaFeign extends ReactiveFeign {
     }
 
     @Override
-    public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+    public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
       return new RxJavaInvocationHandler(target, dispatch, scheduler);
     }
   }

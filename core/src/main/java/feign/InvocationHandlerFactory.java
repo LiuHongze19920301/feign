@@ -22,26 +22,26 @@ import java.util.Map;
  */
 public interface InvocationHandlerFactory {
 
-    InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch);
+  InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch);
 
-    /**
-     * Like {@link InvocationHandler#invoke(Object, java.lang.reflect.Method, Object[])}, except for a
-     * single method.
-     */
-    interface MethodHandler {
+  /**
+   * Like {@link InvocationHandler#invoke(Object, java.lang.reflect.Method, Object[])}, except for a
+   * single method.
+   */
+  interface MethodHandler {
 
-        Object invoke(Object[] argv) throws Throwable;
+    Object invoke(Object[] argv) throws Throwable;
 
-        interface Factory<C> {
-            MethodHandler create(Target<?> target, MethodMetadata md, C requestContext);
-        }
+    interface Factory<C> {
+      MethodHandler create(Target<?> target, MethodMetadata md, C requestContext);
     }
+  }
 
-    static final class Default implements InvocationHandlerFactory {
+  static final class Default implements InvocationHandlerFactory {
 
-        @Override
-        public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
-            return new ReflectiveFeign.FeignInvocationHandler(target, dispatch);
-        }
+    @Override
+    public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
+      return new ReflectiveFeign.FeignInvocationHandler(target, dispatch);
     }
+  }
 }

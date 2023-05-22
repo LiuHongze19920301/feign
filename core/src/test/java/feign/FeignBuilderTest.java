@@ -284,7 +284,7 @@ public class FeignBuilderTest {
       private final InvocationHandlerFactory delegate = new Default();
 
       @Override
-      public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+      public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
         callCount.incrementAndGet();
         return delegate.create(target, dispatch);
       }

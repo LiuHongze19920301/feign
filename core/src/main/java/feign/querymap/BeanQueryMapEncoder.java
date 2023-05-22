@@ -16,7 +16,6 @@ package feign.querymap;
 import feign.Param;
 import feign.QueryMapEncoder;
 import feign.codec.EncodeException;
-
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -35,70 +34,71 @@ import java.util.*;
  */
 public class BeanQueryMapEncoder implements QueryMapEncoder {
 
-    private final Map<Class<?>, ObjectParamMetadata> classToMetadata = new HashMap<>();
+  private final Map<Class<?>, ObjectParamMetadata> classToMetadata = new HashMap<>();
 
-    @Override
-    public Map<String, Object> encode(Object object) throws EncodeException {
-        try {
-            ObjectParamMetadata metadata = getMetadata(object.getClass());
-            Map<String, Object> propertyNameToValue = new HashMap<>();
+  @Override
+  public Map<String, Object> encode(Object object) throws EncodeException {
+    try {
+      ObjectParamMetadata metadata = getMetadata(object.getClass());
+      Map<String, Object> propertyNameToValue = new HashMap<>();
 
-            for (PropertyDescriptor pd : metadata.objectProperties) {
-                // 获取get...方法
-                Method method = pd.getReadMethod();
-                // 获取get...方法的返回值
-                Object value = method.invoke(object);
-                if (value != null && value != object) {
-                    Param alias = method.getAnnotation(Param.class);
-                    String name = alias != null ? alias.value() : pd.getName();
-                    propertyNameToValue.put(name, value);
-                }
-            }
-            return propertyNameToValue;
-        } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
-            throw new EncodeException("Failure encoding object into query map", e);
+      for (PropertyDescriptor pd : metadata.objectProperties) {
+        // 获取get...方法
+        Method method = pd.getReadMethod();
+        // 获取get...方法的返回值
+        Object value = method.invoke(object);
+        if (value != null && value != object) {
+          Param alias = method.getAnnotation(Param.class);
+          String name = alias != null ? alias.value() : pd.getName();
+          propertyNameToValue.put(name, value);
         }
+      }
+      return propertyNameToValue;
+    } catch (IllegalAccessException | IntrospectionException | InvocationTargetException e) {
+      throw new EncodeException("Failure encoding object into query map", e);
     }
+  }
+
+  /**
+   * 获取ObjectParameterMetadata
+   */
+  private ObjectParamMetadata getMetadata(Class<?> objectType) throws IntrospectionException {
+    ObjectParamMetadata metadata = classToMetadata.get(objectType);
+    if (metadata == null) {
+      metadata = ObjectParamMetadata.parseObjectType(objectType);
+      classToMetadata.put(objectType, metadata);
+    }
+    return metadata;
+  }
+
+  /**
+   * 对象参数元数据
+   */
+  private static class ObjectParamMetadata {
 
     /**
-     * 获取ObjectParameterMetadata
+     * 属性描述器
      */
-    private ObjectParamMetadata getMetadata(Class<?> objectType) throws IntrospectionException {
-        ObjectParamMetadata metadata = classToMetadata.get(objectType);
-        if (metadata == null) {
-            metadata = ObjectParamMetadata.parseObjectType(objectType);
-            classToMetadata.put(objectType, metadata);
-        }
-        return metadata;
+    private final List<PropertyDescriptor> objectProperties;
+
+    private ObjectParamMetadata(List<PropertyDescriptor> objectProperties) {
+      this.objectProperties = Collections.unmodifiableList(objectProperties);
     }
 
-    /**
-     * 对象参数元数据
-     */
-    private static class ObjectParamMetadata {
+    private static ObjectParamMetadata parseObjectType(Class<?> type)
+        throws IntrospectionException {
 
-        /**
-         * 属性描述器
-         */
-        private final List<PropertyDescriptor> objectProperties;
+      List<PropertyDescriptor> properties = new ArrayList<>();
 
-        private ObjectParamMetadata(List<PropertyDescriptor> objectProperties) {
-            this.objectProperties = Collections.unmodifiableList(objectProperties);
+      for (PropertyDescriptor pd : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
+        // 忽略getClass方法
+        boolean isGetterMethod = pd.getReadMethod() != null && !"class".equals(pd.getName());
+        if (isGetterMethod) {
+          properties.add(pd);
         }
+      }
 
-        private static ObjectParamMetadata parseObjectType(Class<?> type) throws IntrospectionException {
-
-            List<PropertyDescriptor> properties = new ArrayList<>();
-
-            for (PropertyDescriptor pd : Introspector.getBeanInfo(type).getPropertyDescriptors()) {
-                // 忽略getClass方法
-                boolean isGetterMethod = pd.getReadMethod() != null && !"class".equals(pd.getName());
-                if (isGetterMethod) {
-                    properties.add(pd);
-                }
-            }
-
-            return new ObjectParamMetadata(properties);
-        }
+      return new ObjectParamMetadata(properties);
     }
+  }
 }

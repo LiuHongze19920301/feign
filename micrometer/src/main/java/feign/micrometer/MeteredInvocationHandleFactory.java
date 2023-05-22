@@ -55,7 +55,7 @@ public class MeteredInvocationHandleFactory implements InvocationHandlerFactory 
   }
 
   @Override
-  public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
+  public InvocationHandler create(Target<?> target, Map<Method, MethodHandler> dispatch) {
     final InvocationHandler invocationHandle = invocationHandler.create(target, dispatch);
     return (proxy, method, args) -> {
 
