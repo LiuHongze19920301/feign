@@ -23,7 +23,7 @@
     <version>12.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Feign (Parent)</name>
+    <name>Feign Parent</name>
     <description>Feign makes writing java http clients easier</description>
 
     <modules>

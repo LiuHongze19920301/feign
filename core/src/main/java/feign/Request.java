@@ -13,18 +13,17 @@
  */
 package feign;
 
-import static feign.Util.checkNotNull;
-import static feign.Util.valuesOrEmpty;
-
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import static feign.Util.checkNotNull;
+import static feign.Util.valuesOrEmpty;
 
 /**
  * 真正的请求对象, 要区分于RequestTemplate, RequestTemplate可以被拦截器拦截进行处理,在发出请求前会转换为Request
@@ -147,8 +146,8 @@ public final class Request implements Serializable {
     }
 
     /**
-     * 创建一个Request对象, 所有的参数都必须是effectively不可变的, 通过安全的拷贝来实现, 不要通过修改或者其他方式来实现
-     * Builds a Request. All parameters must be effectively immutable, via safe copies.
+     * 创建一个Request对象, 所有的参数都必须是effectively不可变的, 通过安全的拷贝来实现, 不要通过修改或者其他方式来实现 Builds a Request. All
+     * parameters must be effectively immutable, via safe copies.
      *
      * @param httpMethod for the request.
      * @param url        for the request.
@@ -212,8 +211,7 @@ public final class Request implements Serializable {
     }
 
     /**
-     * 获取http请求的名称
-     * Http Method for this request.
+     * 获取http请求的名称 Http Method for this request.
      *
      * @return the HttpMethod string
      * @deprecated @see {@link #httpMethod()}

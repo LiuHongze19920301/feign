@@ -13,12 +13,13 @@
  */
 package feign.codec;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import feign.Feign;
 import feign.FeignException;
 import feign.Response;
 import feign.Util;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * Decodes an HTTP response into a single object of the given {@code type}. Invoked when
@@ -62,36 +63,38 @@ import feign.Util;
  */
 public interface Decoder {
 
-  /**
-   * Decodes an http response into an object corresponding to its
-   * {@link java.lang.reflect.Method#getGenericReturnType() generic return type}. If you need to
-   * wrap exceptions, please do so via {@link DecodeException}.
-   *
-   * @param response the response to decode
-   * @param type {@link java.lang.reflect.Method#getGenericReturnType() generic return type} of the
-   *        method corresponding to this {@code response}.
-   * @return instance of {@code type}
-   * @throws IOException will be propagated safely to the caller.
-   * @throws DecodeException when decoding failed due to a checked exception besides IOException.
-   * @throws FeignException when decoding succeeds, but conveys the operation failed.
-   */
-  Object decode(Response response, Type type) throws IOException, DecodeException, FeignException;
+    /**
+     * Decodes an http response into an object corresponding to its
+     * {@link java.lang.reflect.Method#getGenericReturnType() generic return type}. If you need to
+     * wrap exceptions, please do so via {@link DecodeException}.
+     *
+     * @param response the response to decode
+     * @param type     {@link java.lang.reflect.Method#getGenericReturnType() generic return type} of the
+     *                 method corresponding to this {@code response}.
+     * @return instance of {@code type}
+     * @throws IOException     will be propagated safely to the caller.
+     * @throws DecodeException when decoding failed due to a checked exception besides IOException.
+     * @throws FeignException  when decoding succeeds, but conveys the operation failed.
+     */
+    Object decode(Response response, Type type) throws IOException, DecodeException, FeignException;
 
-  /**
-   * Default implementation of {@code Decoder}.
-   */
-  public class Default extends StringDecoder {
+    /**
+     * Default implementation of {@code Decoder}.
+     */
+    public class Default extends StringDecoder {
 
-    @Override
-    public Object decode(Response response, Type type) throws IOException {
-      if (response.status() == 404 || response.status() == 204)
-        return Util.emptyValueOf(type);
-      if (response.body() == null)
-        return null;
-      if (byte[].class.equals(type)) {
-        return Util.toByteArray(response.body().asInputStream());
-      }
-      return super.decode(response, type);
+        @Override
+        public Object decode(Response response, Type type) throws IOException {
+            if (response.status() == 404 || response.status() == 204) {
+                return Util.emptyValueOf(type);
+            }
+            if (response.body() == null) {
+                return null;
+            }
+            if (byte[].class.equals(type)) {
+                return Util.toByteArray(response.body().asInputStream());
+            }
+            return super.decode(response, type);
+        }
     }
-  }
 }
