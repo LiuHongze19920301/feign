@@ -14,11 +14,13 @@
 package feign.template;
 
 /**
+ * 代表URI模板的部分
+ * <p>
  * Represents the parts of a URI Template.
  */
 @FunctionalInterface
 public interface TemplateChunk {
 
-  String getValue();
+    String getValue();
 
 }

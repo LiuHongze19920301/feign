@@ -28,10 +28,13 @@ public class StringDecoder implements Decoder {
 
     @Override
     public Object decode(Response response, Type type) throws IOException {
+        // 获取响应信息的body
         Response.Body body = response.body();
+        // 判断响应状态码是否为404或者204, 或者body是否为空
         if (response.status() == 404 || response.status() == 204 || body == null) {
             return null;
         }
+        // 判断响应体是否是字符串类型
         if (String.class.equals(type)) {
             return Util.toString(body.asReader(Util.UTF_8));
         }

@@ -21,6 +21,8 @@ import java.lang.reflect.Type;
 import static java.lang.String.format;
 
 /**
+ * 将一个对象编码为http请求体, 当方法参数没有@Param注解时使用
+ * <p>
  * Encodes an object into an HTTP request body. Like {@code javax.websocket.Encoder}. {@code
  * Encoder} is used when a method parameter has no {@code @Param} annotation. For example: <br>
  * <p/>
@@ -92,9 +94,11 @@ public interface Encoder {
 
         @Override
         public void encode(Object object, Type bodyType, RequestTemplate template) {
+            // 当bodyType时String类型的时候, 直接将object转换为String类型设置到RequestTemplate中的body属性中
             if (bodyType == String.class) {
                 template.body(object.toString());
             } else if (bodyType == byte[].class) {
+                // 当bodyType时byte[]类型的时候, 直接将object转换为byte[]类型设置到RequestTemplate中的body属性中
                 template.body((byte[]) object, null);
             } else if (object != null) {
                 throw new EncodeException(

@@ -28,6 +28,7 @@ import static feign.Util.valuesOrEmpty;
 /**
  * 真正的请求对象, 要区分于RequestTemplate, RequestTemplate可以被拦截器拦截进行处理,在发出请求前会转换为Request
  * <p>
+ * 不可变的
  * An immutable request to an http server.
  */
 public final class Request implements Serializable {
@@ -167,22 +168,27 @@ public final class Request implements Serializable {
      * Http请求方法
      */
     private final HttpMethod httpMethod;
+
     /**
      * Http请求地址
      */
     private final String url;
+
     /**
      * Http请求头
      */
     private final Map<String, Collection<String>> headers;
+
     /**
      * Http请求体
      */
     private final Body body;
+
     /**
      * Http请求模板
      */
     private final RequestTemplate requestTemplate;
+
     /**
      * Http请求协议版本
      */
@@ -341,14 +347,17 @@ public final class Request implements Serializable {
          * 连接超时时间
          */
         private final long connectTimeout;
+
         /**
          * 连接超时时间单位
          */
         private final TimeUnit connectTimeoutUnit;
+
         /**
          * 读取超时时间
          */
         private final long readTimeout;
+
         /**
          * 读取超时时间单位
          */
@@ -497,8 +506,14 @@ public final class Request implements Serializable {
     @Experimental
     public static class Body implements Serializable {
 
+        /**
+         * 编码
+         */
         private transient Charset encoding;
 
+        /**
+         * 数据
+         */
         private byte[] data;
 
         private Body() {

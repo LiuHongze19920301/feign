@@ -14,6 +14,8 @@
 package feign;
 
 /**
+ * 编码Body契约
+ * <p>
  * {@link DeclarativeContract} extension that allows user provided custom encoders to define the
  * request message payload using only the request template and the method parameters, not requiring
  * a specific and unique body object.

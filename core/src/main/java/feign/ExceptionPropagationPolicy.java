@@ -13,8 +13,11 @@
  */
 package feign;
 
+/**
+ * 异常传播策略
+ */
 public enum ExceptionPropagationPolicy {
 
-  NONE, UNWRAP
+    NONE, UNWRAP
 
 }

@@ -13,7 +13,6 @@
  */
 package feign;
 
-import static feign.ExceptionPropagationPolicy.NONE;
 import feign.Feign.ResponseMappingDecoder;
 import feign.Logger.NoOpLogger;
 import feign.Request.Options;
@@ -21,6 +20,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.querymap.FieldQueryMapEncoder;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -29,244 +29,328 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static feign.ExceptionPropagationPolicy.NONE;
+
+/**
+ * 自限定泛型
+ *
+ * @param <B>
+ */
 public abstract class BaseBuilder<B extends BaseBuilder<B>> {
 
-  private final B thisB;
+    private final B thisB;
 
-  protected final List<RequestInterceptor> requestInterceptors =
-      new ArrayList<>();
-  protected ResponseInterceptor responseInterceptor = ResponseInterceptor.DEFAULT;
-  protected Logger.Level logLevel = Logger.Level.NONE;
-  protected Contract contract = new Contract.Default();
-  protected Retryer retryer = new Retryer.Default();
-  protected Logger logger = new NoOpLogger();
-  protected Encoder encoder = new Encoder.Default();
-  protected Decoder decoder = new Decoder.Default();
-  protected boolean closeAfterDecode = true;
-  protected QueryMapEncoder queryMapEncoder = new FieldQueryMapEncoder();
-  protected ErrorDecoder errorDecoder = new ErrorDecoder.Default();
-  protected Options options = new Options();
-  protected InvocationHandlerFactory invocationHandlerFactory =
-      new InvocationHandlerFactory.Default();
-  protected boolean dismiss404;
-  protected ExceptionPropagationPolicy propagationPolicy = NONE;
-  protected List<Capability> capabilities = new ArrayList<>();
+    /**
+     * 请求拦截器列表
+     */
+    protected final List<RequestInterceptor> requestInterceptors =
+        new ArrayList<>();
 
+    /**
+     * 响应拦截器
+     */
+    protected ResponseInterceptor responseInterceptor = ResponseInterceptor.DEFAULT;
 
-  public BaseBuilder() {
-    super();
-    thisB = (B) this;
-  }
+    /**
+     * 日志级别
+     */
+    protected Logger.Level logLevel = Logger.Level.NONE;
 
-  public B logLevel(Logger.Level logLevel) {
-    this.logLevel = logLevel;
-    return thisB;
-  }
+    /**
+     * 契约
+     */
+    protected Contract contract = new Contract.Default();
 
-  public B contract(Contract contract) {
-    this.contract = contract;
-    return thisB;
-  }
+    /**
+     * 重试机制
+     */
+    protected Retryer retryer = new Retryer.Default();
 
-  public B retryer(Retryer retryer) {
-    this.retryer = retryer;
-    return thisB;
-  }
+    /**
+     * logger
+     */
+    protected Logger logger = new NoOpLogger();
 
-  public B logger(Logger logger) {
-    this.logger = logger;
-    return thisB;
-  }
+    /**
+     * 编码器
+     */
+    protected Encoder encoder = new Encoder.Default();
 
-  public B encoder(Encoder encoder) {
-    this.encoder = encoder;
-    return thisB;
-  }
+    /**
+     * 解码器
+     */
+    protected Decoder decoder = new Decoder.Default();
 
-  public B decoder(Decoder decoder) {
-    this.decoder = decoder;
-    return thisB;
-  }
+    /**
+     * 是否在解码后关闭
+     */
+    protected boolean closeAfterDecode = true;
 
-  /**
-   * This flag indicates that the response should not be automatically closed upon completion of
-   * decoding the message. This should be set if you plan on processing the response into a
-   * lazy-evaluated construct, such as a {@link java.util.Iterator}.
-   *
-   * </p>
-   * Feign standard decoders do not have built in support for this flag. If you are using this flag,
-   * you MUST also use a custom Decoder, and be sure to close all resources appropriately somewhere
-   * in the Decoder (you can use {@link Util#ensureClosed} for convenience).
-   *
-   * @since 9.6
-   */
-  public B doNotCloseAfterDecode() {
-    this.closeAfterDecode = false;
-    return thisB;
-  }
+    /**
+     * 查询参数编码器
+     */
+    protected QueryMapEncoder queryMapEncoder = new FieldQueryMapEncoder();
 
-  public B queryMapEncoder(QueryMapEncoder queryMapEncoder) {
-    this.queryMapEncoder = queryMapEncoder;
-    return thisB;
-  }
+    /**
+     * 错误解码器
+     */
+    protected ErrorDecoder errorDecoder = new ErrorDecoder.Default();
 
-  /**
-   * Allows to map the response before passing it to the decoder.
-   */
-  public B mapAndDecode(ResponseMapper mapper, Decoder decoder) {
-    this.decoder = new ResponseMappingDecoder(mapper, decoder);
-    return thisB;
-  }
+    /**
+     * 请求选项
+     */
+    protected Options options = new Options();
 
-  /**
-   * This flag indicates that the {@link #decoder(Decoder) decoder} should process responses with
-   * 404 status, specifically returning null or empty instead of throwing {@link FeignException}.
-   * <p>
-   * <p/>
-   * All first-party (ex gson) decoders return well-known empty values defined by
-   * {@link Util#emptyValueOf}. To customize further, wrap an existing {@link #decoder(Decoder)
-   * decoder} or make your own.
-   * <p>
-   * <p/>
-   * This flag only works with 404, as opposed to all or arbitrary status codes. This was an
-   * explicit decision: 404 -> empty is safe, common and doesn't complicate redirection, retry or
-   * fallback policy. If your server returns a different status for not-found, correct via a custom
-   * {@link #client(Client) client}.
-   *
-   * @since 11.9
-   */
-  public B dismiss404() {
-    this.dismiss404 = true;
-    return thisB;
-  }
+    /**
+     * 调用处理器工厂
+     */
+    protected InvocationHandlerFactory invocationHandlerFactory =
+        new InvocationHandlerFactory.Default();
+
+    /**
+     * 是否忽略404
+     */
+    protected boolean dismiss404;
+
+    /**
+     * 异常传播策略
+     */
+    protected ExceptionPropagationPolicy propagationPolicy = NONE;
+
+    /**
+     * 增强能力列表
+     */
+    protected List<Capability> capabilities = new ArrayList<>();
 
 
-  /**
-   * This flag indicates that the {@link #decoder(Decoder) decoder} should process responses with
-   * 404 status, specifically returning null or empty instead of throwing {@link FeignException}.
-   * <p>
-   * <p/>
-   * All first-party (ex gson) decoders return well-known empty values defined by
-   * {@link Util#emptyValueOf}. To customize further, wrap an existing {@link #decoder(Decoder)
-   * decoder} or make your own.
-   * <p>
-   * <p/>
-   * This flag only works with 404, as opposed to all or arbitrary status codes. This was an
-   * explicit decision: 404 -> empty is safe, common and doesn't complicate redirection, retry or
-   * fallback policy. If your server returns a different status for not-found, correct via a custom
-   * {@link #client(Client) client}.
-   *
-   * @since 8.12
-   * @deprecated
-   */
-  @Deprecated
-  public B decode404() {
-    this.dismiss404 = true;
-    return thisB;
-  }
-
-
-  public B errorDecoder(ErrorDecoder errorDecoder) {
-    this.errorDecoder = errorDecoder;
-    return thisB;
-  }
-
-  public B options(Options options) {
-    this.options = options;
-    return thisB;
-  }
-
-  /**
-   * Adds a single request interceptor to the builder.
-   */
-  public B requestInterceptor(RequestInterceptor requestInterceptor) {
-    this.requestInterceptors.add(requestInterceptor);
-    return thisB;
-  }
-
-  /**
-   * Sets the full set of request interceptors for the builder, overwriting any previous
-   * interceptors.
-   */
-  public B requestInterceptors(Iterable<RequestInterceptor> requestInterceptors) {
-    this.requestInterceptors.clear();
-    for (RequestInterceptor requestInterceptor : requestInterceptors) {
-      this.requestInterceptors.add(requestInterceptor);
-    }
-    return thisB;
-  }
-
-  /**
-   * Adds a single response interceptor to the builder.
-   */
-  public B responseInterceptor(ResponseInterceptor responseInterceptor) {
-    this.responseInterceptor = responseInterceptor;
-    return thisB;
-  }
-
-
-  /**
-   * Allows you to override how reflective dispatch works inside of Feign.
-   */
-  public B invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
-    this.invocationHandlerFactory = invocationHandlerFactory;
-    return thisB;
-  }
-
-  public B exceptionPropagationPolicy(ExceptionPropagationPolicy propagationPolicy) {
-    this.propagationPolicy = propagationPolicy;
-    return thisB;
-  }
-
-  public B addCapability(Capability capability) {
-    this.capabilities.add(capability);
-    return thisB;
-  }
-
-  protected B enrich() {
-    if (capabilities.isEmpty()) {
-      return thisB;
+    @SuppressWarnings("unchecked")
+    public BaseBuilder() {
+        super();
+        thisB = (B) this;
     }
 
-    getFieldsToEnrich().forEach(field -> {
-      field.setAccessible(true);
-      try {
-        final Object originalValue = field.get(thisB);
-        final Object enriched;
-        if (originalValue instanceof List) {
-          Type ownerType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-          enriched = ((List) originalValue).stream()
-              .map(value -> Capability.enrich(value, (Class<?>) ownerType, capabilities))
-              .collect(Collectors.toList());
-        } else {
-          enriched = Capability.enrich(originalValue, field.getType(), capabilities);
+    public B logLevel(Logger.Level logLevel) {
+        this.logLevel = logLevel;
+        return thisB;
+    }
+
+    public B contract(Contract contract) {
+        this.contract = contract;
+        return thisB;
+    }
+
+    public B retryer(Retryer retryer) {
+        this.retryer = retryer;
+        return thisB;
+    }
+
+    public B logger(Logger logger) {
+        this.logger = logger;
+        return thisB;
+    }
+
+    public B encoder(Encoder encoder) {
+        this.encoder = encoder;
+        return thisB;
+    }
+
+    public B decoder(Decoder decoder) {
+        this.decoder = decoder;
+        return thisB;
+    }
+
+    /**
+     * This flag indicates that the response should not be automatically closed upon completion of
+     * decoding the message. This should be set if you plan on processing the response into a
+     * lazy-evaluated construct, such as a {@link java.util.Iterator}.
+     *
+     * </p>
+     * Feign standard decoders do not have built in support for this flag. If you are using this flag,
+     * you MUST also use a custom Decoder, and be sure to close all resources appropriately somewhere
+     * in the Decoder (you can use {@link Util#ensureClosed} for convenience).
+     *
+     * @since 9.6
+     */
+    public B doNotCloseAfterDecode() {
+        this.closeAfterDecode = false;
+        return thisB;
+    }
+
+    public B queryMapEncoder(QueryMapEncoder queryMapEncoder) {
+        this.queryMapEncoder = queryMapEncoder;
+        return thisB;
+    }
+
+    /**
+     * Allows to map the response before passing it to the decoder.
+     */
+    public B mapAndDecode(ResponseMapper mapper, Decoder decoder) {
+        this.decoder = new ResponseMappingDecoder(mapper, decoder);
+        return thisB;
+    }
+
+    /**
+     * This flag indicates that the {@link #decoder(Decoder) decoder} should process responses with
+     * 404 status, specifically returning null or empty instead of throwing {@link FeignException}.
+     * <p>
+     * <p/>
+     * All first-party (ex gson) decoders return well-known empty values defined by
+     * {@link Util#emptyValueOf}. To customize further, wrap an existing {@link #decoder(Decoder)
+     * decoder} or make your own.
+     * <p>
+     * <p/>
+     * This flag only works with 404, as opposed to all or arbitrary status codes. This was an
+     * explicit decision: 404 -> empty is safe, common and doesn't complicate redirection, retry or
+     * fallback policy. If your server returns a different status for not-found, correct via a custom
+     * {@link #client(Client) client}.
+     *
+     * @since 11.9
+     */
+    public B dismiss404() {
+        this.dismiss404 = true;
+        return thisB;
+    }
+
+
+    /**
+     * This flag indicates that the {@link #decoder(Decoder) decoder} should process responses with
+     * 404 status, specifically returning null or empty instead of throwing {@link FeignException}.
+     * <p>
+     * <p/>
+     * All first-party (ex gson) decoders return well-known empty values defined by
+     * {@link Util#emptyValueOf}. To customize further, wrap an existing {@link #decoder(Decoder)
+     * decoder} or make your own.
+     * <p>
+     * <p/>
+     * This flag only works with 404, as opposed to all or arbitrary status codes. This was an
+     * explicit decision: 404 -> empty is safe, common and doesn't complicate redirection, retry or
+     * fallback policy. If your server returns a different status for not-found, correct via a custom
+     * {@link #client(Client) client}.
+     *
+     * @since 8.12
+     * @deprecated
+     */
+    @Deprecated
+    public B decode404() {
+        this.dismiss404 = true;
+        return thisB;
+    }
+
+
+    public B errorDecoder(ErrorDecoder errorDecoder) {
+        this.errorDecoder = errorDecoder;
+        return thisB;
+    }
+
+    public B options(Options options) {
+        this.options = options;
+        return thisB;
+    }
+
+    /**
+     * Adds a single request interceptor to the builder.
+     */
+    public B requestInterceptor(RequestInterceptor requestInterceptor) {
+        this.requestInterceptors.add(requestInterceptor);
+        return thisB;
+    }
+
+    /**
+     * Sets the full set of request interceptors for the builder, overwriting any previous
+     * interceptors.
+     */
+    public B requestInterceptors(Iterable<RequestInterceptor> requestInterceptors) {
+        this.requestInterceptors.clear();
+        for (RequestInterceptor requestInterceptor : requestInterceptors) {
+            this.requestInterceptors.add(requestInterceptor);
         }
-        field.set(thisB, enriched);
-      } catch (IllegalArgumentException | IllegalAccessException e) {
-        throw new RuntimeException("Unable to enrich field " + field, e);
-      } finally {
-        field.setAccessible(false);
-      }
-    });
+        return thisB;
+    }
 
-    return thisB;
-  }
+    /**
+     * Adds a single response interceptor to the builder.
+     */
+    public B responseInterceptor(ResponseInterceptor responseInterceptor) {
+        this.responseInterceptor = responseInterceptor;
+        return thisB;
+    }
 
-  List<Field> getFieldsToEnrich() {
-    return Util.allFields(getClass())
-        .stream()
-        // exclude anything generated by compiler
-        .filter(field -> !field.isSynthetic())
-        // and capabilities itself
-        .filter(field -> !Objects.equals(field.getName(), "capabilities"))
-        // and thisB helper field
-        .filter(field -> !Objects.equals(field.getName(), "thisB"))
-        // skip primitive types
-        .filter(field -> !field.getType().isPrimitive())
-        // skip enumerations
-        .filter(field -> !field.getType().isEnum())
-        .collect(Collectors.toList());
-  }
+
+    /**
+     * Allows you to override how reflective dispatch works inside of Feign.
+     */
+    public B invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
+        this.invocationHandlerFactory = invocationHandlerFactory;
+        return thisB;
+    }
+
+    public B exceptionPropagationPolicy(ExceptionPropagationPolicy propagationPolicy) {
+        this.propagationPolicy = propagationPolicy;
+        return thisB;
+    }
+
+    public B addCapability(Capability capability) {
+        this.capabilities.add(capability);
+        return thisB;
+    }
+
+    /**
+     * 增强处理逻辑
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected B enrich() {
+        if (capabilities.isEmpty()) {
+            return thisB;
+        }
+
+        getFieldsToEnrich().forEach(field -> {
+            // 扩大访问权限
+            field.setAccessible(true);
+            try {
+                final Object originalValue = field.get(thisB);
+                final Object enriched;
+                // 列表的增强逻辑
+                if (originalValue instanceof List) {
+                    Type ownerType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                    enriched = ((List) originalValue).stream()
+                        .map(value -> Capability.enrich(value, (Class<?>) ownerType, capabilities))
+                        .collect(Collectors.toList());
+                } else {
+                    // 普通字段的增强逻辑
+                    enriched = Capability.enrich(originalValue, field.getType(), capabilities);
+                }
+                field.set(thisB, enriched);
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new RuntimeException("Unable to enrich field " + field, e);
+            } finally {
+                // 收回访问权限
+                field.setAccessible(false);
+            }
+        });
+
+        return thisB;
+    }
+
+    List<Field> getFieldsToEnrich() {
+        return Util.allFields(getClass())
+            .stream()
+            // exclude anything generated by compiler
+            // 非编译器合成字段
+            .filter(field -> !field.isSynthetic())
+            // and capabilities itself
+            // 过滤掉capabilities字段
+            .filter(field -> !Objects.equals(field.getName(), "capabilities"))
+            // and thisB helper field
+            // 过滤掉thisB字段
+            .filter(field -> !Objects.equals(field.getName(), "thisB"))
+            // skip primitive types
+            // 过滤掉原始类型
+            .filter(field -> !field.getType().isPrimitive())
+            // skip enumerations
+            // 过滤掉枚举类型
+            .filter(field -> !field.getType().isEnum())
+            .collect(Collectors.toList());
+    }
 
 
 }

@@ -18,6 +18,8 @@ import feign.FeignException;
 import static feign.Util.checkNotNull;
 
 /**
+ * 编码异常
+ * <p>
  * Similar to {@code javax.websocket.EncodeException}, raised when a problem occurs encoding a
  * message. Note that {@code EncodeException} is not an {@code IOException}, nor does it have one
  * set as its cause.

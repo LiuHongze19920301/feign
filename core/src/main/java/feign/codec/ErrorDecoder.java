@@ -85,7 +85,7 @@ public interface ErrorDecoder {
      */
     Exception decode(String methodKey, Response response);
 
-    public static class Default implements ErrorDecoder {
+    class Default implements ErrorDecoder {
 
         private final RetryAfterDecoder retryAfterDecoder = new RetryAfterDecoder();
 

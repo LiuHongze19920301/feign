@@ -20,6 +20,7 @@ import feign.Target.HardCodedTarget;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,189 +43,189 @@ import java.util.function.Supplier;
  */
 @Experimental
 public final class AsyncFeign<C> {
-  public static <C> AsyncBuilder<C> builder() {
-    return new AsyncBuilder<>();
-  }
-
-  /**
-   * @deprecated use {@link #builder()} instead.
-   */
-  @Deprecated()
-  public static <C> AsyncBuilder<C> asyncBuilder() {
-    return builder();
-  }
-
-  private static class LazyInitializedExecutorService {
-
-    private static final ExecutorService instance =
-        Executors.newCachedThreadPool(
-            r -> {
-              final Thread result = new Thread(r);
-              result.setDaemon(true);
-              return result;
-            });
-  }
-
-  public static class AsyncBuilder<C> extends BaseBuilder<AsyncBuilder<C>> {
-
-    private AsyncContextSupplier<C> defaultContextSupplier = () -> null;
-    private AsyncClient<C> client = new AsyncClient.Default<>(
-        new Client.Default(null, null), LazyInitializedExecutorService.instance);
-    private MethodInfoResolver methodInfoResolver = MethodInfo::new;
-
-    @Deprecated
-    public AsyncBuilder<C> defaultContextSupplier(Supplier<C> supplier) {
-      this.defaultContextSupplier = supplier::get;
-      return this;
+    public static <C> AsyncBuilder<C> builder() {
+        return new AsyncBuilder<>();
     }
 
-    public AsyncBuilder<C> client(AsyncClient<C> client) {
-      this.client = client;
-      return this;
+    /**
+     * @deprecated use {@link #builder()} instead.
+     */
+    @Deprecated()
+    public static <C> AsyncBuilder<C> asyncBuilder() {
+        return builder();
     }
 
-    public AsyncBuilder<C> methodInfoResolver(MethodInfoResolver methodInfoResolver) {
-      this.methodInfoResolver = methodInfoResolver;
-      return this;
+    private static class LazyInitializedExecutorService {
+
+        private static final ExecutorService instance =
+            Executors.newCachedThreadPool(
+                r -> {
+                    final Thread result = new Thread(r);
+                    result.setDaemon(true);
+                    return result;
+                });
     }
 
-    @Override
-    public AsyncBuilder<C> mapAndDecode(ResponseMapper mapper, Decoder decoder) {
-      return super.mapAndDecode(mapper, decoder);
+    public static class AsyncBuilder<C> extends BaseBuilder<AsyncBuilder<C>> {
+
+        private AsyncContextSupplier<C> defaultContextSupplier = () -> null;
+        private AsyncClient<C> client = new AsyncClient.Default<>(
+            new Client.Default(null, null), LazyInitializedExecutorService.instance);
+        private MethodInfoResolver methodInfoResolver = MethodInfo::new;
+
+        @Deprecated
+        public AsyncBuilder<C> defaultContextSupplier(Supplier<C> supplier) {
+            this.defaultContextSupplier = supplier::get;
+            return this;
+        }
+
+        public AsyncBuilder<C> client(AsyncClient<C> client) {
+            this.client = client;
+            return this;
+        }
+
+        public AsyncBuilder<C> methodInfoResolver(MethodInfoResolver methodInfoResolver) {
+            this.methodInfoResolver = methodInfoResolver;
+            return this;
+        }
+
+        @Override
+        public AsyncBuilder<C> mapAndDecode(ResponseMapper mapper, Decoder decoder) {
+            return super.mapAndDecode(mapper, decoder);
+        }
+
+        @Override
+        public AsyncBuilder<C> decoder(Decoder decoder) {
+            return super.decoder(decoder);
+        }
+
+        @Override
+        @Deprecated
+        public AsyncBuilder<C> decode404() {
+            return super.decode404();
+        }
+
+        @Override
+        public AsyncBuilder<C> dismiss404() {
+            return super.dismiss404();
+        }
+
+        @Override
+        public AsyncBuilder<C> errorDecoder(ErrorDecoder errorDecoder) {
+            return super.errorDecoder(errorDecoder);
+        }
+
+        @Override
+        public AsyncBuilder<C> doNotCloseAfterDecode() {
+            return super.doNotCloseAfterDecode();
+        }
+
+        public AsyncBuilder<C> defaultContextSupplier(AsyncContextSupplier<C> supplier) {
+            this.defaultContextSupplier = supplier;
+            return this;
+        }
+
+        public <T> T target(Class<T> apiType, String url) {
+            return target(new HardCodedTarget<>(apiType, url));
+        }
+
+        public <T> T target(Class<T> apiType, String url, C context) {
+            return target(new HardCodedTarget<>(apiType, url), context);
+        }
+
+        public <T> T target(Target<T> target) {
+            return build().newInstance(target);
+        }
+
+        public <T> T target(Target<T> target, C context) {
+            return build().newInstance(target, context);
+        }
+
+        @Override
+        public AsyncBuilder<C> logLevel(Level logLevel) {
+            return super.logLevel(logLevel);
+        }
+
+        @Override
+        public AsyncBuilder<C> contract(Contract contract) {
+            return super.contract(contract);
+        }
+
+        @Override
+        public AsyncBuilder<C> logger(Logger logger) {
+            return super.logger(logger);
+        }
+
+        @Override
+        public AsyncBuilder<C> encoder(Encoder encoder) {
+            return super.encoder(encoder);
+        }
+
+        @Override
+        public AsyncBuilder<C> queryMapEncoder(QueryMapEncoder queryMapEncoder) {
+            return super.queryMapEncoder(queryMapEncoder);
+        }
+
+        @Override
+        public AsyncBuilder<C> options(Options options) {
+            return super.options(options);
+        }
+
+        @Override
+        public AsyncBuilder<C> requestInterceptor(RequestInterceptor requestInterceptor) {
+            return super.requestInterceptor(requestInterceptor);
+        }
+
+        @Override
+        public AsyncBuilder<C> requestInterceptors(Iterable<RequestInterceptor> requestInterceptors) {
+            return super.requestInterceptors(requestInterceptors);
+        }
+
+        @Override
+        public AsyncBuilder<C> invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
+            return super.invocationHandlerFactory(invocationHandlerFactory);
+        }
+
+        public AsyncFeign<C> build() {
+            super.enrich();
+
+            AsyncResponseHandler responseHandler =
+                (AsyncResponseHandler) Capability.enrich(
+                    new AsyncResponseHandler(
+                        logLevel,
+                        logger,
+                        decoder,
+                        errorDecoder,
+                        dismiss404,
+                        closeAfterDecode, responseInterceptor),
+                    AsyncResponseHandler.class,
+                    capabilities);
+
+            final MethodHandler.Factory<C> methodHandlerFactory =
+                new AsynchronousMethodHandler.Factory<>(
+                    client, retryer, requestInterceptors,
+                    responseHandler, logger, logLevel,
+                    propagationPolicy, methodInfoResolver,
+                    new RequestTemplateFactoryResolver(encoder, queryMapEncoder),
+                    options, decoder, errorDecoder);
+            final ReflectiveFeign<C> feign =
+                new ReflectiveFeign<>(contract, methodHandlerFactory, invocationHandlerFactory,
+                    defaultContextSupplier);
+            return new AsyncFeign<>(feign);
+        }
     }
 
-    @Override
-    public AsyncBuilder<C> decoder(Decoder decoder) {
-      return super.decoder(decoder);
+    private final ReflectiveFeign<C> feign;
+
+    private AsyncFeign(ReflectiveFeign<C> feign) {
+        this.feign = feign;
     }
 
-    @Override
-    @Deprecated
-    public AsyncBuilder<C> decode404() {
-      return super.decode404();
+    public <T> T newInstance(Target<T> target) {
+        return feign.newInstance(target);
     }
 
-    @Override
-    public AsyncBuilder<C> dismiss404() {
-      return super.dismiss404();
+    public <T> T newInstance(Target<T> target, C context) {
+        return feign.newInstance(target, context);
     }
-
-    @Override
-    public AsyncBuilder<C> errorDecoder(ErrorDecoder errorDecoder) {
-      return super.errorDecoder(errorDecoder);
-    }
-
-    @Override
-    public AsyncBuilder<C> doNotCloseAfterDecode() {
-      return super.doNotCloseAfterDecode();
-    }
-
-    public AsyncBuilder<C> defaultContextSupplier(AsyncContextSupplier<C> supplier) {
-      this.defaultContextSupplier = supplier;
-      return this;
-    }
-
-    public <T> T target(Class<T> apiType, String url) {
-      return target(new HardCodedTarget<>(apiType, url));
-    }
-
-    public <T> T target(Class<T> apiType, String url, C context) {
-      return target(new HardCodedTarget<>(apiType, url), context);
-    }
-
-    public <T> T target(Target<T> target) {
-      return build().newInstance(target);
-    }
-
-    public <T> T target(Target<T> target, C context) {
-      return build().newInstance(target, context);
-    }
-
-    @Override
-    public AsyncBuilder<C> logLevel(Level logLevel) {
-      return super.logLevel(logLevel);
-    }
-
-    @Override
-    public AsyncBuilder<C> contract(Contract contract) {
-      return super.contract(contract);
-    }
-
-    @Override
-    public AsyncBuilder<C> logger(Logger logger) {
-      return super.logger(logger);
-    }
-
-    @Override
-    public AsyncBuilder<C> encoder(Encoder encoder) {
-      return super.encoder(encoder);
-    }
-
-    @Override
-    public AsyncBuilder<C> queryMapEncoder(QueryMapEncoder queryMapEncoder) {
-      return super.queryMapEncoder(queryMapEncoder);
-    }
-
-    @Override
-    public AsyncBuilder<C> options(Options options) {
-      return super.options(options);
-    }
-
-    @Override
-    public AsyncBuilder<C> requestInterceptor(RequestInterceptor requestInterceptor) {
-      return super.requestInterceptor(requestInterceptor);
-    }
-
-    @Override
-    public AsyncBuilder<C> requestInterceptors(Iterable<RequestInterceptor> requestInterceptors) {
-      return super.requestInterceptors(requestInterceptors);
-    }
-
-    @Override
-    public AsyncBuilder<C> invocationHandlerFactory(InvocationHandlerFactory invocationHandlerFactory) {
-      return super.invocationHandlerFactory(invocationHandlerFactory);
-    }
-
-    public AsyncFeign<C> build() {
-      super.enrich();
-
-      AsyncResponseHandler responseHandler =
-          (AsyncResponseHandler) Capability.enrich(
-              new AsyncResponseHandler(
-                  logLevel,
-                  logger,
-                  decoder,
-                  errorDecoder,
-                  dismiss404,
-                  closeAfterDecode, responseInterceptor),
-              AsyncResponseHandler.class,
-              capabilities);
-
-      final MethodHandler.Factory<C> methodHandlerFactory =
-          new AsynchronousMethodHandler.Factory<>(
-              client, retryer, requestInterceptors,
-              responseHandler, logger, logLevel,
-              propagationPolicy, methodInfoResolver,
-              new RequestTemplateFactoryResolver(encoder, queryMapEncoder),
-              options, decoder, errorDecoder);
-      final ReflectiveFeign<C> feign =
-          new ReflectiveFeign<>(contract, methodHandlerFactory, invocationHandlerFactory,
-              defaultContextSupplier);
-      return new AsyncFeign<>(feign);
-    }
-  }
-
-  private final ReflectiveFeign<C> feign;
-
-  private AsyncFeign(ReflectiveFeign<C> feign) {
-    this.feign = feign;
-  }
-
-  public <T> T newInstance(Target<T> target) {
-    return feign.newInstance(target);
-  }
-
-  public <T> T newInstance(Target<T> target, C context) {
-    return feign.newInstance(target, context);
-  }
 }

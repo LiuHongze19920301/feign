@@ -14,6 +14,7 @@
 package feign;
 
 import java.lang.annotation.Retention;
+
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -27,9 +28,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface RequestLine {
 
-  String value();
+    String value();
 
-  boolean decodeSlash() default true;
+    boolean decodeSlash() default true;
 
-  CollectionFormat collectionFormat() default CollectionFormat.EXPLODED;
+    CollectionFormat collectionFormat() default CollectionFormat.EXPLODED;
 }

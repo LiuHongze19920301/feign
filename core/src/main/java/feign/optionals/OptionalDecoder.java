@@ -41,11 +41,14 @@ public final class OptionalDecoder implements Decoder {
     @Override
     public Object decode(Response response, Type type) throws IOException {
         if (!isOptional(type)) {
+            // 如果不是Optional类型, 则直接委托给delegate解码器进行解码
             return delegate.decode(response, type);
         }
+        // 判断响应状态码是否为404或者204
         if (response.status() == 404 || response.status() == 204) {
             return Optional.empty();
         }
+        // 解析Optional类型最后一个参数的类型
         Type enclosedType = Util.resolveLastTypeParameter(type, Optional.class);
         return Optional.ofNullable(delegate.decode(response, enclosedType));
     }
@@ -53,6 +56,8 @@ public final class OptionalDecoder implements Decoder {
     /**
      * 判断是否是Optional类型
      * 如果是Optional类型的肯定是ParameterizedType参数化类型的
+     * 如果是Optional类型必须是参数化类型 e.g. Optional<Abc>
+     * 参数化类型的rawType必须是Optional类型
      */
     static boolean isOptional(Type type) {
         // Optional类型的返回肯定是ParameterizedType参数化类型的

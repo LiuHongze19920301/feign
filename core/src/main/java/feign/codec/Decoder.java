@@ -81,13 +81,14 @@ public interface Decoder {
     /**
      * Default implementation of {@code Decoder}.
      */
-    public class Default extends StringDecoder {
+    class Default extends StringDecoder {
 
         @Override
         public Object decode(Response response, Type type) throws IOException {
             if (response.status() == 404 || response.status() == 204) {
                 return Util.emptyValueOf(type);
             }
+            // 判断响应体为空的情况
             if (response.body() == null) {
                 return null;
             }

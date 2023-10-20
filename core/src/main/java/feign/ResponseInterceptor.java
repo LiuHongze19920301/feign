@@ -24,17 +24,20 @@ import java.util.function.Function;
  */
 public interface ResponseInterceptor {
 
-  ResponseInterceptor DEFAULT = InvocationContext::proceed;
+    /**
+     * 默认的响应拦截器, 调用InvocationContext的proceed方法
+     */
+    ResponseInterceptor DEFAULT = InvocationContext::proceed;
 
-  /**
-   * 注意方法参数是InvocationContext，而不是Response
-   *
-   * Called for response around decode, must either manually invoke
-   * {@link InvocationContext#proceed} or manually create a new response object
-   *
-   * @param invocationContext information surrounding the response been decoded
-   * @return decoded response
-   */
-  Object aroundDecode(InvocationContext invocationContext) throws IOException;
+    /**
+     * 注意方法参数是InvocationContext，而不是Response
+     * <p>
+     * Called for response around decode, must either manually invoke
+     * {@link InvocationContext#proceed} or manually create a new response object
+     *
+     * @param invocationContext information surrounding the response been decoded
+     * @return decoded response
+     */
+    Object aroundDecode(InvocationContext invocationContext) throws IOException;
 
 }

@@ -19,6 +19,8 @@ import feign.Request;
 import static feign.Util.checkNotNull;
 
 /**
+ * 解码异常
+ * <p>
  * Similar to {@code javax.websocket.DecodeException}, raised when a problem occurs decoding a
  * message. Note that {@code DecodeException} is not an {@code IOException}, nor does it have one
  * set as its cause.

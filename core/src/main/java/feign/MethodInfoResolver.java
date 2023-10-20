@@ -14,14 +14,12 @@
 package feign;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 根据方法获取方法信息 MethodInfo
  */
 @Experimental
 public interface MethodInfoResolver {
-  MethodInfo resolve(Class<?> targetType, Method method);
+
+    MethodInfo resolve(Class<?> targetType, Method method);
 }

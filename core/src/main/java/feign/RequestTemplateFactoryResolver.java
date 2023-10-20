@@ -52,8 +52,7 @@ final class RequestTemplateFactoryResolver {
 
     protected final MethodMetadata metadata;
     protected final Target<?> target;
-    private final Map<Integer, Param.Expander> indexToExpander =
-        new LinkedHashMap<Integer, Param.Expander>();
+    private final Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<>();
 
     private BuildTemplateByResolvingArgs(MethodMetadata metadata, QueryMapEncoder queryMapEncoder,
         Target target) {
@@ -89,7 +88,7 @@ final class RequestTemplateFactoryResolver {
         checkArgument(argv[urlIndex] != null, "URI parameter %s was null", urlIndex);
         mutable.target(String.valueOf(argv[urlIndex]));
       }
-      Map<String, Object> varBuilder = new LinkedHashMap<String, Object>();
+      Map<String, Object> varBuilder = new LinkedHashMap<>();
       for (Map.Entry<Integer, Collection<String>> entry : metadata.indexToName().entrySet()) {
         int i = entry.getKey();
         Object value = argv[entry.getKey()];
