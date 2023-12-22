@@ -33,4 +33,5 @@ public @interface RequestLine {
     boolean decodeSlash() default true;
 
     CollectionFormat collectionFormat() default CollectionFormat.EXPLODED;
+
 }

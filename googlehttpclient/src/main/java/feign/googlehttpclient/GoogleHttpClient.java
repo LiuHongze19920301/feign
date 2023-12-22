@@ -102,8 +102,8 @@ public class GoogleHttpClient implements Client {
         return request;
     }
 
-    private final Response convertResponse(final Request inputRequest,
-                                           final HttpResponse inputResponse)
+    private Response convertResponse(final Request inputRequest,
+                                     final HttpResponse inputResponse)
         throws IOException {
         final HttpHeaders headers = inputResponse.getHeaders();
         Integer contentLength = null;
@@ -119,8 +119,8 @@ public class GoogleHttpClient implements Client {
             .build();
     }
 
-    private final Map<String, Collection<String>> toMap(final HttpHeaders headers) {
-        final Map<String, Collection<String>> map = new HashMap<String, Collection<String>>();
+    private Map<String, Collection<String>> toMap(final HttpHeaders headers) {
+        final Map<String, Collection<String>> map = new HashMap<>();
         for (final String header : headers.keySet()) {
             map.put(header, headers.getHeaderStringValues(header));
         }

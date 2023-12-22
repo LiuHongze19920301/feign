@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Feign提供的一种扩展机制， 可以在构建客户端时对其进行定制化
+ * <p>
  * Capabilities expose core feign artifacts to implementations so parts of core can be customized
  * around the time the client being built.
  * <p>
@@ -57,7 +59,7 @@ public interface Capability {
 
     static Object invoke(Object target, Capability capability, Class<?> capabilityToEnrich) {
         return Arrays.stream(capability.getClass().getMethods())
-            .filter(method -> method.getName().equals("enrich"))
+            .filter(method -> "enrich".equals(method.getName()))
             .filter(method -> method.getReturnType().isAssignableFrom(capabilityToEnrich))
             .findFirst()
             .map(method -> {

@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
+ * Bootstraps {@link Feign} instances based on interfaces annotated with {@link FeignClient}.
+ * <p>
  * Feign's purpose is to ease development against http apis that feign restfulness. <br>
  * In implementation, Feign is a {@link Feign#newInstance factory} for generating {@link Target
  * targeted} http apis.

@@ -14,7 +14,9 @@
 package feign;
 
 /**
- * 0个或者多个ReqeustInterceptors可以被配置，用于添加headers到所有的请求中。 Zero or more {@code RequestInterceptors} may
+ * 0个或者多个ReqeustInterceptors可以被配置，用于添加headers到所有的请求中。
+ * <p>
+ * Zero or more {@code RequestInterceptors} may
  * be configured for purposes such as adding headers to all requests. No guarantees are given with
  * regards to the order that interceptors are applied. Once interceptors are applied,
  * {@link Target#apply(RequestTemplate)} is called to create the immutable http request sent via

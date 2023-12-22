@@ -29,6 +29,7 @@ import static feign.Util.valuesOrEmpty;
  * 真正的请求对象, 要区分于RequestTemplate, RequestTemplate可以被拦截器拦截进行处理,在发出请求前会转换为Request
  * <p>
  * 不可变的
+ * <p>
  * An immutable request to an http server.
  */
 public final class Request implements Serializable {

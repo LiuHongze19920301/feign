@@ -21,6 +21,8 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ * 标识一个参数是一个Map, 该Map中的key是String类型, value是Object类型, 该Map中的参数会被添加到请求的Query中
+ * <p>
  * A template parameter that can be applied to a Map that contains query parameters, where the keys
  * are Strings that are the parameter names and the values are the parameter values. The queries
  * specified by the map will be applied to the request after all other processing, and will take

@@ -30,7 +30,9 @@ import static feign.Util.CONTENT_LENGTH;
 import static feign.Util.checkNotNull;
 
 /**
- * RequestTemplate相当于是对Request进行扩展,增加了很多其他的逻辑 Request Builder for an HTTP Target.
+ * RequestTemplate相当于是对Request进行扩展,增加了很多其他的逻辑
+ * <p>
+ * Request Builder for an HTTP Target.
  * <p>
  * This class is a variation on a UriTemplate, where, in addition to the uri, Headers and Query
  * information also support template expressions.

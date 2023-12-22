@@ -41,5 +41,6 @@ public interface QueryMapEncoder {
      * in the Java Beans API, please use the {@link BeanQueryMapEncoder}
      */
     class Default extends FieldQueryMapEncoder {
+
     }
 }

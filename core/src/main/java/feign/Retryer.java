@@ -31,7 +31,7 @@ public interface Retryer extends Cloneable {
     Retryer clone();
 
     /**
-     * 重试的默认实现
+     * 重试机制的默认实现
      */
     class Default implements Retryer {
 

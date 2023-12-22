@@ -38,6 +38,9 @@ import static feign.ExceptionPropagationPolicy.NONE;
  */
 public abstract class BaseBuilder<B extends BaseBuilder<B>> {
 
+    /**
+     * hold this pointer
+     */
     private final B thisB;
 
     /**
@@ -47,7 +50,7 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
         new ArrayList<>();
 
     /**
-     * 响应拦截器
+     * 响应拦截器, 有默认值
      */
     protected ResponseInterceptor responseInterceptor = ResponseInterceptor.DEFAULT;
 
@@ -57,32 +60,32 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
     protected Logger.Level logLevel = Logger.Level.NONE;
 
     /**
-     * 契约
+     * 契约, 有默认值
      */
     protected Contract contract = new Contract.Default();
 
     /**
-     * 重试机制
+     * 重试机制, 有默认值
      */
     protected Retryer retryer = new Retryer.Default();
 
     /**
-     * logger
+     * logger, 默认NoOpLogger
      */
     protected Logger logger = new NoOpLogger();
 
     /**
-     * 编码器
+     * 编码器， 有默认值
      */
     protected Encoder encoder = new Encoder.Default();
 
     /**
-     * 解码器
+     * 解码器, 有默认值
      */
     protected Decoder decoder = new Decoder.Default();
 
     /**
-     * 是否在解码后关闭
+     * 是否在解码后关闭, 默认true
      */
     protected boolean closeAfterDecode = true;
 
@@ -92,17 +95,17 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
     protected QueryMapEncoder queryMapEncoder = new FieldQueryMapEncoder();
 
     /**
-     * 错误解码器
+     * 错误解码器, 有默认值
      */
     protected ErrorDecoder errorDecoder = new ErrorDecoder.Default();
 
     /**
-     * 请求选项
+     * 请求选项, 有默认值
      */
     protected Options options = new Options();
 
     /**
-     * 调用处理器工厂
+     * 调用处理器工厂, 有默认值
      */
     protected InvocationHandlerFactory invocationHandlerFactory =
         new InvocationHandlerFactory.Default();
@@ -113,7 +116,7 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
     protected boolean dismiss404;
 
     /**
-     * 异常传播策略
+     * 异常传播策略, 默认NONE
      */
     protected ExceptionPropagationPolicy propagationPolicy = NONE;
 
@@ -129,31 +132,67 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
         thisB = (B) this;
     }
 
+    /**
+     * 设置日志级别
+     *
+     * @param logLevel 日志级别
+     * @return this
+     */
     public B logLevel(Logger.Level logLevel) {
         this.logLevel = logLevel;
         return thisB;
     }
 
+    /**
+     * 设置契约
+     *
+     * @param contract 契约
+     * @return this
+     */
     public B contract(Contract contract) {
         this.contract = contract;
         return thisB;
     }
 
+    /**
+     * 设置重试机制
+     *
+     * @param retryer 重试机制
+     * @return this
+     */
     public B retryer(Retryer retryer) {
         this.retryer = retryer;
         return thisB;
     }
 
+    /**
+     * 设置日志
+     *
+     * @param logger 日志
+     * @return this
+     */
     public B logger(Logger logger) {
         this.logger = logger;
         return thisB;
     }
 
+    /**
+     * 设置编码器
+     *
+     * @param encoder 编码器
+     * @return this
+     */
     public B encoder(Encoder encoder) {
         this.encoder = encoder;
         return thisB;
     }
 
+    /**
+     * 设置解码器
+     *
+     * @param decoder 解码器
+     * @return this
+     */
     public B decoder(Decoder decoder) {
         this.decoder = decoder;
         return thisB;
@@ -176,6 +215,12 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
         return thisB;
     }
 
+    /**
+     * 设置QueryMapEncoder
+     *
+     * @param queryMapEncoder QueryMapEncoder
+     * @return this
+     */
     public B queryMapEncoder(QueryMapEncoder queryMapEncoder) {
         this.queryMapEncoder = queryMapEncoder;
         return thisB;

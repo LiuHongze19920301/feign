@@ -64,7 +64,7 @@ public interface Target<T> {
      * javax.ws.rs.client.WebTarget.request()}, except that we expect transient, but necessary
      * decoration to be applied on invocation.
      */
-    public Request apply(RequestTemplate input);
+    Request apply(RequestTemplate input);
 
     /**
      * 基于硬编码的Target实现
