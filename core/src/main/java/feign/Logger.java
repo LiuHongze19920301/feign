@@ -161,6 +161,8 @@ public abstract class Logger {
     }
 
     /**
+     * Feign日志级别控制
+     * <p>
      * Controls the level of logging.
      */
     public enum Level {

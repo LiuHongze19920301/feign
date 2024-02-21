@@ -29,7 +29,7 @@ import java.util.Optional;
 public final class OptionalDecoder implements Decoder {
 
     /**
-     * 委托的解码器
+     * 委托的解码器, delegate pattern
      */
     final Decoder delegate;
 

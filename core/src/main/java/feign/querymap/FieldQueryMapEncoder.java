@@ -50,6 +50,7 @@ public class FieldQueryMapEncoder implements QueryMapEncoder {
 
     private String fieldName(Pair<Field, Optional<Object>> pair) {
         Param alias = pair.left.getAnnotation(Param.class);
+        // 先检测Param注解, 如果没有就使用成员变量名称
         return alias != null ? alias.value() : pair.left.getName();
     }
 
@@ -69,9 +70,13 @@ public class FieldQueryMapEncoder implements QueryMapEncoder {
         private final List<Field> objectFields;
 
         private ObjectParamMetadata(List<Field> objectFields) {
+            // 不可变包装
             this.objectFields = Collections.unmodifiableList(objectFields);
         }
 
+        /**
+         * 解析成员信息
+         */
         private static ObjectParamMetadata parseObjectType(Class<?> type) {
             List<Field> allFields = new ArrayList<>();
 

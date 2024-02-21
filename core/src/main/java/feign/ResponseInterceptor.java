@@ -25,7 +25,7 @@ import java.util.function.Function;
 public interface ResponseInterceptor {
 
     /**
-     * 默认的响应拦截器, 调用InvocationContext的proceed方法
+     * 默认的响应拦截器, 调用InvocationContext的proceed方法, 方法引用
      */
     ResponseInterceptor DEFAULT = InvocationContext::proceed;
 

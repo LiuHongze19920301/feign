@@ -281,7 +281,7 @@ public class Template {
      */
     static class ChunkTokenizer {
 
-        private List<String> tokens = new ArrayList<>();
+        private final List<String> tokens = new ArrayList<>();
         private int index;
 
         ChunkTokenizer(String template) {
@@ -351,6 +351,7 @@ public class Template {
     }
 
     public enum EncodingOptions {
+
         REQUIRED(true), NOT_REQUIRED(false);
 
         private final boolean shouldEncode;

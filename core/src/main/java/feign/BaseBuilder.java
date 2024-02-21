@@ -396,6 +396,4 @@ public abstract class BaseBuilder<B extends BaseBuilder<B>> {
             .filter(field -> !field.getType().isEnum())
             .collect(Collectors.toList());
     }
-
-
 }

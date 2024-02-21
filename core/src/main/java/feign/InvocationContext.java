@@ -49,6 +49,7 @@ public class InvocationContext {
 
     public Object proceed() {
         try {
+            // 处理逻辑就是decoder根据response和returnType进行解码
             return decoder.decode(response, returnType);
         } catch (final FeignException e) {
             throw e;

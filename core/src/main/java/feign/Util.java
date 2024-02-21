@@ -73,8 +73,12 @@ public class Util {
      * Type literal for {@code Map<String, ?>}.
      */
     public static final Type MAP_STRING_WILDCARD =
-        new Types.ParameterizedTypeImpl(null, Map.class, String.class,
-            new Types.WildcardTypeImpl(new Type[]{Object.class}, new Type[0]));
+        new Types.ParameterizedTypeImpl(
+            null,
+            Map.class,
+            String.class,
+            new Types.WildcardTypeImpl(new Type[]{Object.class}, new Type[0])
+        );
 
     private Util() { // no instances
     }
